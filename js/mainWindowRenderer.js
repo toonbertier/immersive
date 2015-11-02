@@ -4,7 +4,7 @@ let ipc = require('ipc');
 
 // ThreeJS
 
-let depth = 0;
+let cameraPos;
 let effect;
 
 let camera = new THREE.PerspectiveCamera(60, 720/480 , 1, 100000);
@@ -38,11 +38,12 @@ effect.setSize( 720, 480 );
 camera.position.z = 5;
 
 ipc.on('move', function(arg){
-	depth = arg/10000;
+	cameraPos = arg/100;
 })
 
 const render = () => {
 	requestAnimationFrame(render);
+	camera.position.x = cameraPos;
 	effect.render(scene, camera);
 }
 
