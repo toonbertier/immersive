@@ -2,69 +2,90 @@
 
 let ipc = require('ipc');
 
-let spheres = [];
+let stars = [];
+let earth;
+let camera, scene, renderer, effect;
 
-let effect;
-let camera = new THREE.PerspectiveCamera(60, 720/480 , 1, 100000);
-let scene = new THREE.Scene();
-
-let renderer = new THREE.WebGLRenderer();
-renderer.setSize( 720, 480 );
-document.body.appendChild(renderer.domElement);
-
-let geometry = new THREE.SphereGeometry(0.5, 32, 32);
-let material = new THREE.MeshBasicMaterial({ color: 0xdddddd });
-
-effect = new THREE.AnaglyphEffect(renderer);
-effect.setSize( 720, 480 );
-
-camera.position.z = 400;
-
-// ipc.on('move', function(arg){
-// 	cameraX = arg/1000;
-// 	cameraZ = 5 - arg/1000;
+// ipc.on('move', function(val){
+// 	camera.position.x = (val - 1017) / 10;
 // });
 
-const removeOutOfBounds = (sphere) => {
-	if(sphere.position.z > 400) {
-		scene.remove(sphere);
-		spheres.remove(spheres.findIndex(s => s.uuid == sphere.uuid));
+const createStar = () => {
+	let starGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+	let starMaterial = new THREE.MeshBasicMaterial({ color: 0xdddddd });
+	let star = new THREE.Mesh(starGeometry, starMaterial);
+	
+	star.position.z = Math.random() * 150;
+	star.position.x = Math.random() * 500 - 250;
+	star.position.y = Math.random() * 300 - 150;
+
+	scene.add(star);
+
+	return star;
+};
+
+const createEarth = () => {
+	let earthGeometry = new THREE.SphereGeometry(80, 32, 32);
+
+	let earthMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+	earthMaterial.map = THREE.ImageUtils.loadTexture('./assets/earth_map.jpg');
+	earthMaterial.bumpMap = THREE.ImageUtils.loadTexture('./assets/earth_bump.jpg');
+	earthMaterial.bumpScale = 0.5;
+	earthMaterial.specularMap = THREE.ImageUtils.loadTexture('./assets/earth_spec.jpg');
+	earthMaterial.specular = new THREE.Color('grey');
+
+	earth = new THREE.Mesh(earthGeometry, earthMaterial);
+
+	earth.position.z = 300;
+	earth.position.x = 0;
+	earth.position.y = -110;
+
+	scene.add(earth);
+};
+
+const removeOutOfBoundsStar = (star) => {
+	if(star.position.z > 400 || star.position.y > 200) {
+		scene.remove(star);
+		stars.remove(stars.findIndex(s => s.uuid == star.uuid));
 		return true;
 	}
 	return false;
-}
-
-const createNewSphere = () => {
-	let sphere = new THREE.Mesh(geometry, material);
-	sphere.position.z = Math.random() * 150;
-	sphere.position.x = Math.random() * 500 - 250;
-	sphere.position.y = Math.random() * 300 - 150;
-	scene.add(sphere);
-
-	return sphere;
-}
+};
 
 const render = () => {
 	requestAnimationFrame(render);
 	effect.render(scene, camera);
 
-	spheres.forEach(sphere => {
-		sphere.position.z += 0.8;
-		if(removeOutOfBounds(sphere)){
-			spheres.push(createNewSphere());
+	earth.rotation.x += 0.0005;
+
+	stars.forEach(star => {
+		star.position.z += 0.2;
+		star.position.y += 0.2;
+		if(removeOutOfBoundsStar(star)){
+			stars.push(createStar());
 		}
 	});
-}
+};
 
 const init = () => {
+	camera = new THREE.PerspectiveCamera(50, 720/480 , 1, 100000);
+	scene = new THREE.Scene();
+
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize( 720, 480 );
+	document.body.appendChild(renderer.domElement);
+
+	effect = new THREE.AnaglyphEffect(renderer);
+	effect.setSize( 720, 480 );
+
+	camera.position.z = 400;
 
 	for(let i = 0; i < 150; i++) {
-		spheres.push(createNewSphere());
+		stars.push(createStar());
 	}
-
-	console.log(spheres);
+	createEarth();
 
 	render();
-}
+};
 
 init();
