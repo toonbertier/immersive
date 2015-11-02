@@ -25,7 +25,7 @@ const createStar = () => {
 };
 
 const createEarth = () => {
-	let earthGeometry = new THREE.SphereGeometry(80, 32, 32);
+	let earthGeometry = new THREE.SphereGeometry(190, 32, 32);
 
 	let earthMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 	earthMaterial.map = THREE.ImageUtils.loadTexture('./assets/earth_map.jpg');
@@ -38,7 +38,7 @@ const createEarth = () => {
 
 	earth.position.z = 300;
 	earth.position.x = 0;
-	earth.position.y = -110;
+	earth.position.y = -220;
 
 	scene.add(earth);
 };
