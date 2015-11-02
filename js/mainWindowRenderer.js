@@ -5,20 +5,20 @@ let ipc = require('ipc');
 let spheres = [];
 
 let effect;
-let camera = new THREE.PerspectiveCamera(90, 720/480 , 1, 100000);
+let camera = new THREE.PerspectiveCamera(60, 720/480 , 1, 100000);
 let scene = new THREE.Scene();
 
 let renderer = new THREE.WebGLRenderer();
 renderer.setSize( 720, 480 );
 document.body.appendChild(renderer.domElement);
 
-let geometry = new THREE.SphereGeometry(2, 32, 32);
-let material = new THREE.MeshBasicMaterial({ color: 0xdddddd, wireframe: true });
+let geometry = new THREE.SphereGeometry(0.5, 32, 32);
+let material = new THREE.MeshBasicMaterial({ color: 0xdddddd });
 
 effect = new THREE.AnaglyphEffect(renderer);
 effect.setSize( 720, 480 );
 
-camera.position.z = 200;
+camera.position.z = 400;
 
 // ipc.on('move', function(arg){
 // 	cameraX = arg/1000;
@@ -26,7 +26,7 @@ camera.position.z = 200;
 // });
 
 const removeOutOfBounds = (sphere) => {
-	if(sphere.position.z > 200) {
+	if(sphere.position.z > 400) {
 		scene.remove(sphere);
 		spheres.remove(spheres.findIndex(s => s.uuid == sphere.uuid));
 		return true;
@@ -36,9 +36,9 @@ const removeOutOfBounds = (sphere) => {
 
 const createNewSphere = () => {
 	let sphere = new THREE.Mesh(geometry, material);
-	sphere.position.z = Math.random() * 50;
-	sphere.position.x = Math.random() * 300 - 150;
-	sphere.position.y = Math.random() * 200 - 100;
+	sphere.position.z = Math.random() * 150;
+	sphere.position.x = Math.random() * 500 - 250;
+	sphere.position.y = Math.random() * 300 - 150;
 	scene.add(sphere);
 
 	return sphere;
@@ -49,7 +49,7 @@ const render = () => {
 	effect.render(scene, camera);
 
 	spheres.forEach(sphere => {
-		sphere.position.z += 0.3;
+		sphere.position.z += 0.8;
 		if(removeOutOfBounds(sphere)){
 			spheres.push(createNewSphere());
 		}
@@ -58,7 +58,7 @@ const render = () => {
 
 const init = () => {
 
-	for(let i = 0; i < 50; i++) {
+	for(let i = 0; i < 150; i++) {
 		spheres.push(createNewSphere());
 	}
 
