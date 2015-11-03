@@ -1,5 +1,7 @@
 'use strict';
 
+console.log('hello renderer');
+
 let ipc = require('ipc');
 
 let stars = [];
@@ -11,6 +13,7 @@ let camera, scene, renderer, effect;
 // });
 
 const createStar = () => {
+	console.log('creating a star');
 	let starGeometry = new THREE.SphereGeometry(0.5, 32, 32);
 	let starMaterial = new THREE.MeshBasicMaterial({ color: 0xdddddd });
 	let star = new THREE.Mesh(starGeometry, starMaterial);
@@ -25,14 +28,13 @@ const createStar = () => {
 };
 
 const createEarth = () => {
-	let earthGeometry = new THREE.SphereGeometry(190, 32, 32);
+	console.log('creating earth');
+	let earthGeometry = new THREE.SphereGeometry(190, 64, 64);
 
 	let earthMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-	earthMaterial.map = THREE.ImageUtils.loadTexture('./assets/earth_map.jpg');
+	earthMaterial.map = THREE.ImageUtils.loadTexture('./assets/earth_map.png');
 	earthMaterial.bumpMap = THREE.ImageUtils.loadTexture('./assets/earth_bump.jpg');
-	earthMaterial.bumpScale = 100;
-	earthMaterial.specularMap = THREE.ImageUtils.loadTexture('./assets/earth_spec.jpg');
-	earthMaterial.specular = new THREE.Color('grey');
+	earthMaterial.bumpScale = 10;
 
 	earth = new THREE.Mesh(earthGeometry, earthMaterial);
 
@@ -53,6 +55,7 @@ const removeOutOfBoundsStar = (star) => {
 };
 
 const render = () => {
+	console.log('rendering frame');
 	requestAnimationFrame(render);
 	effect.render(scene, camera);
 
@@ -68,6 +71,7 @@ const render = () => {
 };
 
 const init = () => {
+	console.log('initiating launch');
 	camera = new THREE.PerspectiveCamera(50, 1360/540 , 1, 100000);
 	scene = new THREE.Scene();
 
@@ -84,7 +88,7 @@ const init = () => {
 
 	camera.position.z = 400;
 
-	for(let i = 0; i < 150; i++) {
+	for(let i = 0; i < 300; i++) {
 		stars.push(createStar());
 	}
 	createEarth();
