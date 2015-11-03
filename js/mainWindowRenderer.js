@@ -1,14 +1,26 @@
 'use strict';
 
+// ----- UTILS
+
+// Array Remove - By John Resig (MIT Licensed)
+const removeFromArray = (arr, from, to) => {
+  var rest = arr.slice((to || from) + 1 || arr.length);
+  arr.length = from < 0 ? arr.length + from : from;
+  return arr.push.apply(arr, rest);
+};
+
+const mapRange = (value, low1, high1, low2, high2) => {
+  return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+};
+
+// ------
+
 let ipc = require('ipc');
 
 let stars = [];
 let earth, asteroid;
 let camera, scene, renderer, effect;
-
-// ipc.on('move', function(val){
-// 	camera.position.x = (val - 1017) / 10;
-// });
+let cameraX = 0;
 
 const createEarth = () => {
 	let earthGeometry = new THREE.SphereGeometry(190, 64, 64);
@@ -31,15 +43,34 @@ const createEarth = () => {
 			scene.add(earth);
 		});
 	});
-
 };
 
-const createStar = () => {
+const createAsteroid = () => {
+	let asteroidGeometry = new THREE.SphereGeometry(5, 32, 32);
+
+	let textureLoader = new THREE.TextureLoader();
+
+	textureLoader.load('./assets/asteroid_bump.jpg', bump => {
+		let asteroidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+		asteroidMaterial.bumpMap = bump;
+		asteroidMaterial.bumpScale = 10;
+
+		asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
+
+		asteroid.position.z = -500;
+		asteroid.position.x = Math.random() * 80 - 40;
+		asteroid.position.y = Math.random() * 20 - 10;
+
+		scene.add(asteroid);
+	});
+};
+
+const getStar = () => {
 	let starGeometry = new THREE.SphereGeometry(0.5, 32, 32);
 	let starMaterial = new THREE.MeshBasicMaterial({ color: 0xdddddd });
 	let star = new THREE.Mesh(starGeometry, starMaterial);
 	
-	star.position.z = Math.random() * 150;
+	star.position.z = Math.random() * 300 - 150;
 	star.position.x = Math.random() * 500 - 250;
 	star.position.y = Math.random() * 300 - 150;
 
@@ -48,49 +79,58 @@ const createStar = () => {
 	return star;
 };
 
-const createAsteroid = () => {
-	let asteroidGeometry = new THREE.SphereGeometry(40, 32, 32);
-
-	let textureLoader = new THREE.TextureLoader();
-
-	textureLoader.load('./assets/asteroid_bump.jpg', bump => {
-		console.log('bump loaded');
-		let asteroidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-		asteroidMaterial.bumpMap = bump;
-		asteroidMaterial.bumpScale = 10;
-
-		asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
-
-		asteroid.position.z = 120;
-		asteroid.position.x = 0;
-		asteroid.position.y = 0;
-
-		scene.add(asteroid);
-	});
-}
-
 const removeOutOfBoundsStar = (star) => {
 	if(star.position.z > 400 || star.position.y > 200) {
 		scene.remove(star);
-		stars.remove(stars.findIndex(s => s.uuid == star.uuid));
+		removeFromArray(stars, stars.findIndex(s => s.uuid == star.uuid));
 		return true;
 	}
 	return false;
 };
 
+const removeOutOfBoundsAsteroid = (asteroid) => {
+	if(asteroid.position.z > 500) {
+		scene.remove(asteroid);
+		return true;
+	}
+	return false;
+}
+
+ipc.on('move', function(val){
+	if(val > 411 && val < 611 ) {
+		cameraX = mapRange(val, 411, 611, 100, -100);
+	}
+});
+
+const moveCamera = () => {
+	camera.position.x += (cameraX - camera.position.x) * 0.05;
+}
+
 const render = () => {
 	requestAnimationFrame(render);
+
 	effect.render(scene, camera);
+	moveCamera();
 
 	if(earth) {
 		earth.rotation.x += 0.0005;
 	}
 
+	if(asteroid && earth) {
+		if(removeOutOfBoundsAsteroid(asteroid)) {
+			asteroid = createAsteroid();
+		} else {
+			asteroid.position.z += 3;
+			asteroid.rotation.x += 0.01;
+			asteroid.rotation.y += 0.005;
+		}
+	}
+
 	stars.forEach(star => {
-		star.position.z += 0.2;
+		star.position.z += 0.06;
 		star.position.y += 0.1;
 		if(removeOutOfBoundsStar(star)){
-			stars.push(createStar());
+			stars.push(getStar());
 		}
 	});
 };
@@ -111,9 +151,10 @@ const init = () => {
 	scene.add(light);
 
 	camera.position.z = 400;
+	camera.position.x = 0;
 
 	for(let i = 0; i < 300; i++) {
-		stars.push(createStar());
+		stars.push(getStar());
 	}
 	createAsteroid();
 	createEarth();
