@@ -1,19 +1,40 @@
 'use strict';
 
-console.log('hello renderer');
-
 let ipc = require('ipc');
 
 let stars = [];
-let earth;
+let earth, asteroid;
 let camera, scene, renderer, effect;
 
 // ipc.on('move', function(val){
 // 	camera.position.x = (val - 1017) / 10;
 // });
 
+const createEarth = () => {
+	let earthGeometry = new THREE.SphereGeometry(190, 64, 64);
+
+	let textureLoader = new THREE.TextureLoader();
+
+	textureLoader.load('./assets/earth_map.png', texture => {
+		textureLoader.load('./assets/earth_bump.jpg', bump => {
+			let earthMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+			earthMaterial.map = texture;
+			earthMaterial.bumpMap = bump;
+			earthMaterial.bumpScale = 10;
+
+			earth = new THREE.Mesh(earthGeometry, earthMaterial);
+
+			earth.position.z = 300;
+			earth.position.x = 0;
+			earth.position.y = -220;
+
+			scene.add(earth);
+		});
+	});
+
+};
+
 const createStar = () => {
-	console.log('creating a star');
 	let starGeometry = new THREE.SphereGeometry(0.5, 32, 32);
 	let starMaterial = new THREE.MeshBasicMaterial({ color: 0xdddddd });
 	let star = new THREE.Mesh(starGeometry, starMaterial);
@@ -27,23 +48,26 @@ const createStar = () => {
 	return star;
 };
 
-const createEarth = () => {
-	console.log('creating earth');
-	let earthGeometry = new THREE.SphereGeometry(190, 64, 64);
+const createAsteroid = () => {
+	let asteroidGeometry = new THREE.SphereGeometry(40, 32, 32);
 
-	let earthMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-	earthMaterial.map = THREE.ImageUtils.loadTexture('./assets/earth_map.png');
-	earthMaterial.bumpMap = THREE.ImageUtils.loadTexture('./assets/earth_bump.jpg');
-	earthMaterial.bumpScale = 10;
+	let textureLoader = new THREE.TextureLoader();
 
-	earth = new THREE.Mesh(earthGeometry, earthMaterial);
+	textureLoader.load('./assets/asteroid_bump.jpg', bump => {
+		console.log('bump loaded');
+		let asteroidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+		asteroidMaterial.bumpMap = bump;
+		asteroidMaterial.bumpScale = 10;
 
-	earth.position.z = 300;
-	earth.position.x = 0;
-	earth.position.y = -220;
+		asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
 
-	scene.add(earth);
-};
+		asteroid.position.z = 120;
+		asteroid.position.x = 0;
+		asteroid.position.y = 0;
+
+		scene.add(asteroid);
+	});
+}
 
 const removeOutOfBoundsStar = (star) => {
 	if(star.position.z > 400 || star.position.y > 200) {
@@ -55,11 +79,12 @@ const removeOutOfBoundsStar = (star) => {
 };
 
 const render = () => {
-	console.log('rendering frame');
 	requestAnimationFrame(render);
 	effect.render(scene, camera);
 
-	earth.rotation.x += 0.0005;
+	if(earth) {
+		earth.rotation.x += 0.0005;
+	}
 
 	stars.forEach(star => {
 		star.position.z += 0.2;
@@ -71,7 +96,6 @@ const render = () => {
 };
 
 const init = () => {
-	console.log('initiating launch');
 	camera = new THREE.PerspectiveCamera(50, 1360/540 , 1, 100000);
 	scene = new THREE.Scene();
 
@@ -82,7 +106,7 @@ const init = () => {
 	effect = new THREE.AnaglyphEffect(renderer);
 	effect.setSize(1360, 540);
 
-	var light = new THREE.DirectionalLight( 0xffffff );
+	let light = new THREE.DirectionalLight( 0xffffff );
 	light.position.set( 0, 1, 1 ).normalize();
 	scene.add(light);
 
@@ -91,6 +115,7 @@ const init = () => {
 	for(let i = 0; i < 300; i++) {
 		stars.push(createStar());
 	}
+	createAsteroid();
 	createEarth();
 
 	render();
