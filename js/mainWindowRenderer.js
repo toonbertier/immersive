@@ -27,10 +27,10 @@ const createStar = () => {
 const createEarth = () => {
 	let earthGeometry = new THREE.SphereGeometry(190, 32, 32);
 
-	let earthMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+	let earthMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 	earthMaterial.map = THREE.ImageUtils.loadTexture('./assets/earth_map.jpg');
 	earthMaterial.bumpMap = THREE.ImageUtils.loadTexture('./assets/earth_bump.jpg');
-	earthMaterial.bumpScale = 0.5;
+	earthMaterial.bumpScale = 100;
 	earthMaterial.specularMap = THREE.ImageUtils.loadTexture('./assets/earth_spec.jpg');
 	earthMaterial.specular = new THREE.Color('grey');
 
@@ -60,7 +60,7 @@ const render = () => {
 
 	stars.forEach(star => {
 		star.position.z += 0.2;
-		star.position.y += 0.2;
+		star.position.y += 0.1;
 		if(removeOutOfBoundsStar(star)){
 			stars.push(createStar());
 		}
@@ -68,15 +68,19 @@ const render = () => {
 };
 
 const init = () => {
-	camera = new THREE.PerspectiveCamera(50, 720/480 , 1, 100000);
+	camera = new THREE.PerspectiveCamera(50, 1360/540 , 1, 100000);
 	scene = new THREE.Scene();
 
 	renderer = new THREE.WebGLRenderer();
-	renderer.setSize( 720, 480 );
+	renderer.setSize(1360, 540);
 	document.body.appendChild(renderer.domElement);
 
 	effect = new THREE.AnaglyphEffect(renderer);
-	effect.setSize( 720, 480 );
+	effect.setSize(1360, 540);
+
+	var light = new THREE.DirectionalLight( 0xffffff );
+	light.position.set( 0, 1, 1 ).normalize();
+	scene.add(light);
 
 	camera.position.z = 400;
 
