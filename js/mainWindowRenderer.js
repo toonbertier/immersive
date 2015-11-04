@@ -18,7 +18,7 @@ const mapRange = (value, low1, high1, low2, high2) => {
 let ipc = require('ipc');
 
 let stars = [];
-let earth, asteroid, asteroidRadius;
+let earth, asteroid, asteroidRadius, hud;
 let camera, scene, renderer, effect;
 let cameraX = 0, cameraY = 0;
 let cameraIsShaking = false, shakedFrames;
@@ -68,6 +68,27 @@ const createAsteroid = () => {
 		scene.add(asteroid);
 	});
 };
+
+const createHUD = () => {
+	let hudGeometry = new THREE.BoxGeometry(20, 9, 0.01);
+
+	let textureLoader = new THREE.TextureLoader();
+
+	textureLoader.load('./assets/hud.jpg', texture => {
+		let hudMaterial = new THREE.MeshBasicMaterial();
+		hudMaterial.transparant = true;
+		hudMaterial.opacity = 0.8;
+		hudMaterial.map = texture;
+		hud = new THREE.Mesh(hudGeometry, hudMaterial);
+
+		hud.position.z = 360;
+		hud.position.x = camera.position.x;
+		hud.position.y = camera.position.y;
+
+		scene.add(hud);
+
+	});
+}
 
 const getStar = () => {
 	let starGeometry = new THREE.SphereGeometry(0.5, 32, 32);
@@ -147,7 +168,13 @@ const detectAsteroidCollision = () => {
 const moveCamera = () => {
 	camera.position.x += (cameraX - camera.position.x) * 0.05;
 	camera.position.y += (cameraY - camera.position.y) * 0.05;
+	moveHUD();
 };
+
+const moveHUD = () => {
+	hud.position.x = camera.position.x;
+	hud.position.y = camera.position.y;
+}
 
 const shakeCameraValues = () => {
 	if(!cameraIsShaking) cameraIsShaking = true;
@@ -212,6 +239,7 @@ const setup = () => {
 	}
 	createAsteroid();
 	createEarth();
+	createHUD();
 
 	draw();
 };

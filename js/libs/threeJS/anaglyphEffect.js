@@ -8,7 +8,7 @@ THREE.AnaglyphEffect = function ( renderer, width, height ) {
 
 	var eyeRight = new THREE.Matrix4();
 	var eyeLeft = new THREE.Matrix4();
-	var focalLength = 120;
+	var focalLength = 100;
 	var _aspect, _near, _far, _fov;
 
 	var _cameraL = new THREE.PerspectiveCamera();
