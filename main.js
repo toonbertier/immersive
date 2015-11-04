@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 // Electron
 let ipc = require('ipc');
@@ -11,13 +11,13 @@ let board = five.Board();
 
 let mainWindow = null;
 
-app.on('window-all-closed', function() {
+app.on('window-all-closed', () => {
   if (process.platform != 'darwin') {
     app.quit();
   }
 });
 
-app.on('ready', function() {
+app.on('ready', () => {
 
   mainWindow = new BrowserWindow({width: 1440, height: 720});
   mainWindow.openDevTools();
@@ -25,7 +25,7 @@ app.on('ready', function() {
 
   board.on('ready', initBoard);
 
-  mainWindow.on('closed', function() {
+  mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
@@ -41,7 +41,7 @@ const initBoard = () => {
     pot: potentiometer
   });
 
-  potentiometer.on("data", function() {
+  potentiometer.on("data", () => {
     let value = this.raw;
     mainWindow.webContents.send('move', value);
   });

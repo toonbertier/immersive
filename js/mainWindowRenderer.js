@@ -1,27 +1,22 @@
 'use strict';
 
-// ----- helpers/util
-
-// Array Remove - By John Resig (MIT Licensed)
-const removeFromArray = (arr, from, to) => {
-  var rest = arr.slice((to || from) + 1 || arr.length);
-  arr.length = from < 0 ? arr.length + from : from;
-  return arr.push.apply(arr, rest);
-};
-
-const mapRange = (value, low1, high1, low2, high2) => {
-  return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
-};
-
-// ------
-
 let ipc = require('ipc');
+let helpers = require('./js/modules/helpers/helpers');
+let BufferLoader = require('./js/modules/sound/BufferLoader');
+let Player = require('./js/modules/sound/Player');
+let sounds = require('./assets/sounds/sounds.js');
 
 let stars = [];
-let earth, asteroid, asteroidRadius, hud;
+let earth, asteroid, asteroidRadius;
 let camera, scene, renderer, effect;
 let cameraX = 0, cameraY = 0, cameraIsShaking = false, shakedFrames;
-let audioCtx, player;
+let audioCtx, player, soundFX;
+
+// --- temp debug variables
+	
+let asteroidSoundPlaying = false;
+
+// ---
 
 // SYSTEM
 
@@ -29,6 +24,7 @@ const setup = () => {
 	
 	setupThreeJS();
 	setupScenery();
+	setupAudio();
 
 	draw();
 
@@ -59,7 +55,27 @@ const setupScenery = () => {
 	}
 	createAsteroid();
 	createEarth();
-	createHUD();
+};
+
+const setupAudio = () => {
+
+  window.AudioContext =
+    window.AudioContext ||
+    window.webkitAudioContext;
+
+	audioCtx = new AudioContext();
+  player = new Player(audioCtx);
+
+  loadSetting(sounds);
+};
+
+const loadSetting = sounds => {
+  let loader = new BufferLoader(audioCtx);
+  loader.load(sounds)
+  	.then(data => {
+  			console.log(data);
+  			soundFX = data;
+  	});
 };
 
 const draw = () => {
@@ -75,7 +91,6 @@ const draw = () => {
 	handleStars();
 
 	detectAsteroidCollision();
-
 };
 
 // CREATING SCENERY
@@ -123,27 +138,6 @@ const createAsteroid = () => {
 		scene.add(asteroid);
 	});
 };
-
-const createHUD = () => {
-	let hudGeometry = new THREE.BoxGeometry(20, 9, 0.01);
-
-	let textureLoader = new THREE.TextureLoader();
-
-	textureLoader.load('./assets/images/hud.png', texture => {
-		let hudMaterial = new THREE.MeshBasicMaterial();
-		hudMaterial.transparant = true;
-		hudMaterial.opacity = 0.8;
-		hudMaterial.map = texture;
-		hud = new THREE.Mesh(hudGeometry, hudMaterial);
-
-		hud.position.z = 360;
-		hud.position.x = camera.position.x;
-		hud.position.y = camera.position.y;
-
-		scene.add(hud);
-
-	});
-}
 
 const getStar = () => {
 	let starGeometry = new THREE.SphereGeometry(0.5, 32, 32);
@@ -194,7 +188,7 @@ const handleStars = () => {
 const removeOutOfBoundsStar = (star) => {
 	if(star.position.z > 400 || star.position.y > 200) {
 		scene.remove(star);
-		removeFromArray(stars, stars.findIndex(s => s.uuid == star.uuid));
+		helpers.removeFromArray(stars, stars.findIndex(s => s.uuid == star.uuid));
 		return true;
 	}
 	return false;
@@ -205,18 +199,20 @@ const removeOutOfBoundsAsteroid = (asteroid) => {
 		scene.remove(asteroid);
 		return true;
 	}
+	if(asteroid.position.z >= 214 && asteroid.position.z <= 216) {
+		player.play(soundFX[1]);
+	}
 	return false;
 }
 
 const detectAsteroidCollision = () => {
 	if(asteroid) {
-		if(camera.position.z < asteroid.position.z + asteroidRadius/2 
-			 && camera.position.x > asteroid.position.x - asteroidRadius/2 
-			 && camera.position.x < asteroid.position.x + asteroidRadius/2 ) {
-			shakeCameraValues();
-		} else {
-			//player.play('long_whoosh', 0);
-		}
+		if(camera.position.z < asteroid.position.z + asteroidRadius/2) {
+			if(camera.position.x > asteroid.position.x - asteroidRadius/2 
+				 && camera.position.x < asteroid.position.x + asteroidRadius/2 ) {
+				shakeCameraValues();
+			}
+		} 
 	}
 };
 
@@ -225,15 +221,7 @@ const detectAsteroidCollision = () => {
 const moveCamera = () => {
 	camera.position.x += (cameraX - camera.position.x) * 0.05;
 	camera.position.y += (cameraY - camera.position.y) * 0.05;
-	if(hud) {
-		moveHUD();
-	}
 };
-
-const moveHUD = () => {
-	hud.position.x = camera.position.x;
-	hud.position.y = camera.position.y;
-}
 
 const shakeCameraValues = () => {
 	if(!cameraIsShaking) cameraIsShaking = true;
@@ -253,7 +241,7 @@ const shakeCameraValues = () => {
 
 ipc.on('move', function(val){
 	if(val > 411 && val < 611 ) {
-		cameraX = mapRange(val, 411, 611, 100, -100);
+		cameraX = helpers.mapRange(val, 411, 611, 100, -100);
 	}
 });
 

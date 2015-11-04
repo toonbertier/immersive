@@ -24,10 +24,12 @@
   },
   "homepage": "https://github.com/toonbertier/immersive#readme",
   "dependencies": {
-    "babel": "^6.0.15",
+    "fs": "0.0.2",
+    "fs-promise": "^0.3.1",
     "johnny-five": "^0.9.2"
   },
   "devDependencies": {
+    "babel-core": "^6.0.20",
     "electron-prebuilt": "^0.34.2"
   }
 }
