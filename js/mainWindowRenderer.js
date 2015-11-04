@@ -20,8 +20,63 @@ let ipc = require('ipc');
 let stars = [];
 let earth, asteroid, asteroidRadius, hud;
 let camera, scene, renderer, effect;
-let cameraX = 0, cameraY = 0;
-let cameraIsShaking = false, shakedFrames;
+let cameraX = 0, cameraY = 0, cameraIsShaking = false, shakedFrames;
+let audioCtx, player;
+
+// SYSTEM
+
+const setup = () => {
+	
+	setupThreeJS();
+	setupScenery();
+
+	draw();
+
+};
+
+const setupThreeJS = () => {
+	camera = new THREE.PerspectiveCamera(50, 1360/540 , 1, 100000);
+	scene = new THREE.Scene();
+
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize(1360, 540);
+	document.body.appendChild(renderer.domElement);
+
+	effect = new THREE.AnaglyphEffect(renderer);
+	effect.setSize(1360, 540);
+
+	let light = new THREE.DirectionalLight( 0xffffff );
+	light.position.set( 0, 1, 1 ).normalize();
+	scene.add(light);
+
+	camera.position.z = 400;
+	camera.position.x = 0;
+};
+
+const setupScenery = () => {
+	for(let i = 0; i < 300; i++) {
+		stars.push(getStar());
+	}
+	createAsteroid();
+	createEarth();
+	createHUD();
+};
+
+const draw = () => {
+	requestAnimationFrame(draw);
+
+	effect.render(scene, camera);
+
+	if(cameraIsShaking) shakeCameraValues();
+	moveCamera();
+
+	handleEarth();
+	handleAsteroid();
+	handleStars();
+
+	detectAsteroidCollision();
+
+};
 
 // CREATING SCENERY
 
@@ -30,8 +85,8 @@ const createEarth = () => {
 
 	let textureLoader = new THREE.TextureLoader();
 
-	textureLoader.load('./assets/earth_map.png', texture => {
-		textureLoader.load('./assets/earth_bump.jpg', bump => {
+	textureLoader.load('./assets/images/earth_map.png', texture => {
+		textureLoader.load('./assets/images/earth_bump.jpg', bump => {
 			let earthMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 			earthMaterial.map = texture;
 			earthMaterial.bumpMap = bump;
@@ -54,7 +109,7 @@ const createAsteroid = () => {
 
 	let textureLoader = new THREE.TextureLoader();
 
-	textureLoader.load('./assets/asteroid_bump.jpg', bump => {
+	textureLoader.load('./assets/images/asteroid_bump.jpg', bump => {
 		let asteroidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 		asteroidMaterial.bumpMap = bump;
 		asteroidMaterial.bumpScale = 10;
@@ -74,7 +129,7 @@ const createHUD = () => {
 
 	let textureLoader = new THREE.TextureLoader();
 
-	textureLoader.load('./assets/hud.jpg', texture => {
+	textureLoader.load('./assets/images/hud.png', texture => {
 		let hudMaterial = new THREE.MeshBasicMaterial();
 		hudMaterial.transparant = true;
 		hudMaterial.opacity = 0.8;
@@ -159,6 +214,8 @@ const detectAsteroidCollision = () => {
 			 && camera.position.x > asteroid.position.x - asteroidRadius/2 
 			 && camera.position.x < asteroid.position.x + asteroidRadius/2 ) {
 			shakeCameraValues();
+		} else {
+			//player.play('long_whoosh', 0);
 		}
 	}
 };
@@ -168,7 +225,9 @@ const detectAsteroidCollision = () => {
 const moveCamera = () => {
 	camera.position.x += (cameraX - camera.position.x) * 0.05;
 	camera.position.y += (cameraY - camera.position.y) * 0.05;
-	moveHUD();
+	if(hud) {
+		moveHUD();
+	}
 };
 
 const moveHUD = () => {
@@ -197,51 +256,5 @@ ipc.on('move', function(val){
 		cameraX = mapRange(val, 411, 611, 100, -100);
 	}
 });
-
-// SYSTEM
-
-const draw = () => {
-	requestAnimationFrame(draw);
-
-	effect.render(scene, camera);
-
-	if(cameraIsShaking) shakeCameraValues();
-	moveCamera();
-
-	handleEarth();
-	handleAsteroid();
-	handleStars();
-
-	detectAsteroidCollision();
-
-};
-
-const setup = () => {
-	camera = new THREE.PerspectiveCamera(50, 1360/540 , 1, 100000);
-	scene = new THREE.Scene();
-
-	renderer = new THREE.WebGLRenderer();
-	renderer.setSize(1360, 540);
-	document.body.appendChild(renderer.domElement);
-
-	effect = new THREE.AnaglyphEffect(renderer);
-	effect.setSize(1360, 540);
-
-	let light = new THREE.DirectionalLight( 0xffffff );
-	light.position.set( 0, 1, 1 ).normalize();
-	scene.add(light);
-
-	camera.position.z = 400;
-	camera.position.x = 0;
-
-	for(let i = 0; i < 300; i++) {
-		stars.push(getStar());
-	}
-	createAsteroid();
-	createEarth();
-	createHUD();
-
-	draw();
-};
 
 setup();
