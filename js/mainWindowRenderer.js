@@ -4,13 +4,17 @@ let ipc = require('ipc');
 let helpers = require('./js/modules/helpers/helpers');
 let BufferLoader = require('./js/modules/sound/BufferLoader');
 let Player = require('./js/modules/sound/Player');
+let Asteroid = require('./js/modules/game_elements/Asteroid');
+let Star = require('./js/modules/game_elements/Star');
+let Earth = require('./js/modules/game_elements/Earth');
+let Timeline = require('./js/modules/story/Timeline');
 let soundData = require('./assets/sounds/sounds.js');
 
 let stars = [];
-let earth, asteroid, asteroidRadius;
+let earth, asteroid;
 let camera, scene, renderer, effect;
 let cameraX = 0, cameraY = 0, cameraIsShaking = false, shakedFrames;
-let audioCtx, player, soundFX, soundtrack;
+let audioCtx, player, soundFX, soundtrack, timeline;
 
 // SYSTEM
 
@@ -37,6 +41,7 @@ const handleStartButton = () => {
 		e.preventDefault();
 		buttonDiv.parentNode.removeChild(buttonDiv);
 		soundtrack.play();
+		// soundtrack.muted = true;
 
 		draw();
 	});
@@ -80,6 +85,8 @@ const setupAudio = () => {
   	player = new Player(audioCtx);
 		soundtrack = document.querySelector('.soundtrack');
 
+		timeline = new Timeline();
+
   	loadSoundData(soundData).then(data => {
   		soundFX = data
   		return resolve(true);
@@ -100,7 +107,7 @@ const loadSoundData = sounds => {
 const draw = () => {
 	effect.render(scene, camera);
 
-	console.log(soundtrack.currentTime);
+	timeline.handleTime(soundtrack.currentTime);
 
 	if(cameraIsShaking) shakeCameraValues();
 	moveCamera();
@@ -119,75 +126,47 @@ const draw = () => {
 const createEarth = () => {
 	return new Promise((resolve, reject) => {
 
-		let earthGeometry = new THREE.SphereGeometry(190, 64, 64);
-		let textureLoader = new THREE.TextureLoader();
+		earth = new Earth();
 
-		textureLoader.load('./assets/images/earth_map.png', texture => {
-			textureLoader.load('./assets/images/earth_bump.jpg', bump => {
-				let earthMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-				earthMaterial.map = texture;
-				earthMaterial.bumpMap = bump;
-				earthMaterial.bumpScale = 10;
-
-				earth = new THREE.Mesh(earthGeometry, earthMaterial);
-
-				earth.position.z = 300;
-				earth.position.x = 0;
-				earth.position.y = -220;
-
-				scene.add(earth);
-				return resolve(earth);
-			});
-		});
+	  earth.render().then(_earth => {
+	  	scene.add(_earth.el);
+	  	return resolve(_earth.el);
+	  });
 
 	});
 	
 };
 
 const createAsteroid = () => {
+
 	return new Promise((resolve, reject) => {
 
-		asteroidRadius = 5;
-		let asteroidGeometry = new THREE.SphereGeometry(asteroidRadius, 32, 32);
+		asteroid = new Asteroid();
 
-		let textureLoader = new THREE.TextureLoader();
+	  asteroid.render().then(_asteroid => {
+	  	scene.add(_asteroid.el);
+	  	return resolve(_asteroid);
+	  });
 
-		textureLoader.load('./assets/images/asteroid_bump.jpg', bump => {
-			let asteroidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-			asteroidMaterial.bumpMap = bump;
-			asteroidMaterial.bumpScale = 10;
-
-			asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
-
-			asteroid.position.z = -500;
-			asteroid.position.x = Math.random() * 80 - 40;
-			asteroid.position.y = Math.random() * 20 - 10;
-
-			scene.add(asteroid);
-			return resolve(asteroid);
-		});
 	});
+
 };
 
 const getStar = () => {
-	let starGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-	let starMaterial = new THREE.MeshBasicMaterial({ color: 0xdddddd });
-	let star = new THREE.Mesh(starGeometry, starMaterial);
-	
-	star.position.z = Math.random() * 300 - 150;
-	star.position.x = Math.random() * 500 - 250;
-	star.position.y = Math.random() * 300 - 150;
 
-	scene.add(star);
+	let star = new Star();
+	star.render();
 
-	return star;
+	scene.add(star.el);
+	return star.el;
+
 };
 
 // HANDLING SCENERY
 
 const handleEarth = () => {
 	if(earth) {
-		earth.rotation.x += 0.0005;
+		earth.el.rotation.x += 0.0005;
 	}
 };
 
@@ -196,9 +175,9 @@ const handleAsteroid = () => {
 		if(removeOutOfBoundsAsteroid(asteroid)) {
 			createAsteroid();
 		} else {
-			asteroid.position.z += 3;
-			asteroid.rotation.x += 0.01;
-			asteroid.rotation.y += 0.005;
+			asteroid.el.position.z += 3;
+			asteroid.el.rotation.x += 0.01;
+			asteroid.el.rotation.y += 0.005;
 		}
 	}
 };
@@ -225,21 +204,21 @@ const removeOutOfBoundsStar = (star) => {
 };
 
 const removeOutOfBoundsAsteroid = (asteroid) => {
-	if(asteroid.position.z > 500) {
-		scene.remove(asteroid);
+	if(asteroid.el.position.z > 500) {
+		scene.remove(asteroid.el);
 		return true;
 	}
-	if(asteroid.position.z >= 214 && asteroid.position.z <= 216) {
+	if(asteroid.el.position.z >= 214 && asteroid.el.position.z <= 216) {
 		player.play(soundFX[1]);
 	}
 	return false;
 }
 
 const detectAsteroidCollision = () => {
-	if(asteroid) {
-		if(camera.position.z < asteroid.position.z + asteroidRadius/2) {
-			if(camera.position.x > asteroid.position.x - asteroidRadius/2 
-				 && camera.position.x < asteroid.position.x + asteroidRadius/2 ) {
+	if(asteroid.el) {
+		if(camera.position.z < asteroid.el.position.z + asteroid.el.geometry.boundingSphere.radius/2) {
+			if(camera.position.x > asteroid.el.position.x - asteroid.el.geometry.boundingSphere.radius/2 
+				 && camera.position.x < asteroid.el.position.x + asteroid.el.geometry.boundingSphere.radius/2 ) {
 				shakeCameraValues();
 			}
 		} 
