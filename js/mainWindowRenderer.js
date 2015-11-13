@@ -241,7 +241,7 @@ const shakeCameraValues = () => {
 
 ipc.on('move', function(val){
 	if(val > 411 && val < 611 ) {
-		cameraX = helpers.mapRange(val, 411, 611, 100, -100);
+		cameraX = helpers.mapRange(val, 411, 611, -100, 100);
 	}
 });
 

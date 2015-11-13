@@ -11,13 +11,13 @@ let board = five.Board();
 
 let mainWindow = null;
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', function(){
   if (process.platform != 'darwin') {
     app.quit();
   }
 });
 
-app.on('ready', () => {
+app.on('ready', function(){
 
   mainWindow = new BrowserWindow({width: 1440, height: 720});
   mainWindow.openDevTools();
@@ -25,7 +25,7 @@ app.on('ready', () => {
 
   board.on('ready', initBoard);
 
-  mainWindow.on('closed', () => {
+  mainWindow.on('closed', function(){
     mainWindow = null;
   });
 
@@ -41,7 +41,8 @@ const initBoard = () => {
     pot: potentiometer
   });
 
-  potentiometer.on("data", () => {
+  potentiometer.on("data", function(){
+    console.log(this.raw);
     let value = this.raw;
     mainWindow.webContents.send('move', value);
   });
