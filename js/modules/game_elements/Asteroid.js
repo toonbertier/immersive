@@ -26,6 +26,8 @@ Asteroid.prototype.render = function(){
 			this.el.position.x = this.x;
 			this.el.position.y = this.y;
 
+      bean.fire(this, 'test');
+
 			return resolve(this);
 
 		});

@@ -9,6 +9,7 @@ let Star = require('./js/modules/game_elements/Star');
 let Earth = require('./js/modules/game_elements/Earth');
 let Timeline = require('./js/modules/story/Timeline');
 let soundData = require('./assets/sounds/sounds.js');
+let bean = require('./js/libs/bean/bean.min.js');
 
 let stars = [];
 let earth, asteroid;
@@ -101,7 +102,7 @@ const loadSoundData = sounds => {
 	  	return resolve(data);
 	  });
 	});
-  
+
 };
 
 const draw = () => {
@@ -137,7 +138,7 @@ const createEarth = () => {
 	  });
 
 	});
-	
+
 };
 
 const createAsteroid = () => {
@@ -145,6 +146,10 @@ const createAsteroid = () => {
 	return new Promise((resolve, reject) => {
 
 		asteroid = new Asteroid();
+
+    bean.on(asteroid, 'test', function(e) {
+      console.log('yes baby');
+    });
 
 	  asteroid.render().then(_asteroid => {
 	  	scene.add(_asteroid.el);
@@ -168,7 +173,7 @@ const getStar = () => {
 // HANDLING SCENERY
 
 const handleAsteroid = () => {
-	if(asteroid && earth) {
+	if(asteroid.el && earth.el) {
 		if(removeOutOfBoundsAsteroid(asteroid)) {
 			createAsteroid();
 		} else {
@@ -212,11 +217,11 @@ const removeOutOfBoundsAsteroid = (asteroid) => {
 const detectAsteroidCollision = () => {
 	if(asteroid.el) {
 		if(camera.position.z < asteroid.el.position.z + asteroid.el.geometry.boundingSphere.radius/2) {
-			if(camera.position.x > asteroid.el.position.x - asteroid.el.geometry.boundingSphere.radius/2 
+			if(camera.position.x > asteroid.el.position.x - asteroid.el.geometry.boundingSphere.radius/2
 				 && camera.position.x < asteroid.el.position.x + asteroid.el.geometry.boundingSphere.radius/2 ) {
 				shakeCameraValues();
 			}
-		} 
+		}
 	}
 };
 
