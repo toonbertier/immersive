@@ -6,11 +6,11 @@ function Asteroid(){
 	this.x = Math.random() * 80 - 40;
 	this.y = Math.random() * 20 - 10;
 	this.radius = Math.random() * (8 - 1) + 1;
-	
+
 }
 
 Asteroid.prototype.render = function(){
-	
+
 	return new Promise((resolve, reject) => {
 
 		let asteroidGeometry = new THREE.SphereGeometry(this.radius, 32, 32);
@@ -32,6 +32,12 @@ Asteroid.prototype.render = function(){
 
 	});
 
+};
+
+Asteroid.prototype.update = function(){
+	this.el.position.z += 3;
+	this.el.rotation.x += 0.01;
+	this.el.rotation.y += 0.005;
 };
 
 module.exports = Asteroid;

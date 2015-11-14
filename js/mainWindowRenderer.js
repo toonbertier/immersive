@@ -112,7 +112,10 @@ const draw = () => {
 	if(cameraIsShaking) shakeCameraValues();
 	moveCamera();
 
-	handleEarth();
+	if(earth) {
+		earth.update();
+	}
+
 	handleAsteroid();
 	handleStars();
 
@@ -164,20 +167,12 @@ const getStar = () => {
 
 // HANDLING SCENERY
 
-const handleEarth = () => {
-	if(earth) {
-		earth.el.rotation.x += 0.0005;
-	}
-};
-
 const handleAsteroid = () => {
 	if(asteroid && earth) {
 		if(removeOutOfBoundsAsteroid(asteroid)) {
 			createAsteroid();
 		} else {
-			asteroid.el.position.z += 3;
-			asteroid.el.rotation.x += 0.01;
-			asteroid.el.rotation.y += 0.005;
+			asteroid.update();
 		}
 	}
 };

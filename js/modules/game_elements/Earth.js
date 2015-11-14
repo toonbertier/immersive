@@ -33,4 +33,8 @@ Earth.prototype.render = function(){
 
 };
 
+Earth.prototype.update = function(){
+	earth.el.rotation.x += 0.0005;
+};
+
 module.exports = Earth;
