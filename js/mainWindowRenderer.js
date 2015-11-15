@@ -1,7 +1,10 @@
 'use strict';
 
+(function(){
+
 let ipc = require('ipc');
 let helpers = require('./js/modules/helpers/helpers');
+let Camera = require('./js/modules/studio/Camera');
 let BufferLoader = require('./js/modules/sound/BufferLoader');
 let Player = require('./js/modules/sound/Player');
 let Asteroid = require('./js/modules/game_elements/Asteroid');
@@ -9,12 +12,11 @@ let Star = require('./js/modules/game_elements/Star');
 let Earth = require('./js/modules/game_elements/Earth');
 let Timeline = require('./js/modules/story/Timeline');
 let soundData = require('./assets/sounds/sounds.js');
-let bean = require('./js/libs/bean/bean.min.js');
+window.bean = require('./js/libs/bean/bean.min.js');
 
 let stars = [];
 let earth, asteroid;
 let camera, scene, renderer, effect;
-let cameraX = 0, cameraY = 0, cameraIsShaking = false, shakedFrames;
 let audioCtx, player, soundFX, soundtrack, timeline;
 
 // SYSTEM
@@ -23,10 +25,11 @@ const setup = () => {
 
 	setupThreeJS();
 	Promise.all([setupScenery(), setupAudio()]).then(() => {
-		renderer.render(scene, camera);
+		renderer.render(scene, camera.el);
 		removeLoading();
 		handleStartButton();
 	});
+
 };
 
 const removeLoading = () => {
@@ -49,7 +52,8 @@ const handleStartButton = () => {
 };
 
 const setupThreeJS = () => {
-	camera = new THREE.PerspectiveCamera(50, 1440/720 , 1, 100000);
+
+  camera = new Camera();
 	scene = new THREE.Scene();
 
 	renderer = new THREE.WebGLRenderer();
@@ -63,8 +67,6 @@ const setupThreeJS = () => {
 	light.position.set(0, 1, 1).normalize();
 	scene.add(light);
 
-	camera.position.z = 400;
-	camera.position.x = 0;
 };
 
 const setupScenery = () => {
@@ -93,9 +95,11 @@ const setupAudio = () => {
   		return resolve(true);
   	});
 	});
+
 };
 
 const loadSoundData = sounds => {
+
 	return new Promise((resolve, reject) => {
 		let loader = new BufferLoader(audioCtx);
 	  loader.load(sounds).then(data => {
@@ -106,30 +110,24 @@ const loadSoundData = sounds => {
 };
 
 const draw = () => {
-	effect.render(scene, camera);
 
+	effect.render(scene, camera.el);
 	timeline.handleTime(soundtrack.currentTime);
 
-	if(cameraIsShaking) shakeCameraValues();
-	moveCamera();
+	if(camera.isShaking) camera.shake();
+	camera.move();
 
-	if(earth) {
-		earth.update();
-	}
-
-	handleAsteroid();
-	handleStars();
-
-	detectAsteroidCollision();
-
+  handleScenery();
+	if(asteroid.el && asteroid.detectCollision(camera.el.position)) camera.shake();
 	requestAnimationFrame(draw);
+
 };
 
 // CREATING SCENERY
 
 const createEarth = () => {
-	return new Promise((resolve, reject) => {
 
+	return new Promise((resolve, reject) => {
 		earth = new Earth();
 
 	  earth.render().then(_earth => {
@@ -145,10 +143,11 @@ const createAsteroid = () => {
 
 	return new Promise((resolve, reject) => {
 
-		asteroid = new Asteroid();
+    asteroid = new Asteroid();
+    window.bean.on(asteroid, 'passing', () => {
 
-    bean.on(asteroid, 'test', function(e) {
-      console.log('yes baby');
+      player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, camera.el.position.x));
+
     });
 
 	  asteroid.render().then(_asteroid => {
@@ -164,94 +163,53 @@ const getStar = () => {
 
 	let star = new Star();
 	star.render();
-
 	scene.add(star.el);
-	return star.el;
+	return star;
 
 };
 
 // HANDLING SCENERY
 
+const handleScenery = () => {
+  if(earth) earth.update();
+  handleAsteroid();
+  handleStars();
+};
+
 const handleAsteroid = () => {
+
 	if(asteroid.el && earth.el) {
-		if(removeOutOfBoundsAsteroid(asteroid)) {
+		if(asteroid.checkOutOfBounds()) {
+      scene.remove(asteroid.el);
 			createAsteroid();
 		} else {
 			asteroid.update();
 		}
 	}
+
 };
 
 const handleStars = () => {
+
 	stars.forEach(star => {
-		star.position.z += 0.06;
-		star.position.y += 0.1;
-		if(removeOutOfBoundsStar(star)){
-			stars.push(getStar());
-		}
+		star.update();
+
+    if(star.checkOutOfBounds()){
+      scene.remove(star.el);
+      helpers.removeFromArray(stars, stars.findIndex(s => s.el.uuid == star.el.uuid));
+      stars.push(getStar());
+    }
+
 	});
+
 };
 
-// DETECTION
-
-const removeOutOfBoundsStar = (star) => {
-	if(star.position.z > 400 || star.position.y > 200) {
-		scene.remove(star);
-		helpers.removeFromArray(stars, stars.findIndex(s => s.uuid == star.uuid));
-		return true;
-	}
-	return false;
-};
-
-const removeOutOfBoundsAsteroid = (asteroid) => {
-	if(asteroid.el.position.z > 500) {
-		scene.remove(asteroid.el);
-		return true;
-	}
-	if(asteroid.el.position.z >= 214 && asteroid.el.position.z <= 216) {
-		player.play(soundFX[1]);
-	}
-	return false;
-}
-
-const detectAsteroidCollision = () => {
-	if(asteroid.el) {
-		if(camera.position.z < asteroid.el.position.z + asteroid.el.geometry.boundingSphere.radius/2) {
-			if(camera.position.x > asteroid.el.position.x - asteroid.el.geometry.boundingSphere.radius/2
-				 && camera.position.x < asteroid.el.position.x + asteroid.el.geometry.boundingSphere.radius/2 ) {
-				shakeCameraValues();
-			}
-		}
-	}
-};
-
-// CAMERA
-
-const moveCamera = () => {
-	camera.position.x += (cameraX - camera.position.x) * 0.05;
-	camera.position.y += (cameraY - camera.position.y) * 0.05;
-};
-
-const shakeCameraValues = () => {
-	if(!cameraIsShaking) cameraIsShaking = true;
-
-	if(shakedFrames < 120) {
-		shakedFrames++;
-		if(shakedFrames % 10 == 0) {
-			cameraX = Math.random() * (120 - shakedFrames) - ((120 - shakedFrames)/2);
-			cameraY = Math.random() * ((120 - shakedFrames) - ((120 - shakedFrames)/2)) / 2;
-		}
-	} else {
-		shakedFrames = 0;
-		cameraY = 0;
-		cameraIsShaking = false;
-	}
-}
-
-ipc.on('move', function(val){
+ipc.on('move', function(val) {
 	if(val > 411 && val < 611 ) {
-		cameraX = helpers.mapRange(val, 411, 611, -100, 100);
+		camera.x = helpers.mapRange(val, 411, 611, -100, 100);
 	}
 });
 
 setup();
+
+})();

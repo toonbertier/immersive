@@ -1,13 +1,13 @@
 'use strict';
 
-function Earth(){	
+function Earth() {
 	this.z = 300;
 	this.x = 0;
 	this.y = -220;
 }
 
-Earth.prototype.render = function(){
-	
+Earth.prototype.render = function() {
+
 	return new Promise((resolve, reject) => {
 
 		let earthGeometry = new THREE.SphereGeometry(190, 64, 64);
@@ -33,8 +33,8 @@ Earth.prototype.render = function(){
 
 };
 
-Earth.prototype.update = function(){
-	earth.el.rotation.x += 0.0005;
+Earth.prototype.update = function() {
+	this.el.rotation.x += 0.0005;
 };
 
 module.exports = Earth;
