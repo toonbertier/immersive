@@ -1,9 +1,14 @@
 'use strict';
 
 function Star() {
+
 	this.z = Math.random() * 300 - 150;
 	this.x = Math.random() * 500 - 250;
 	this.y = Math.random() * 300 - 150;
+
+  this.transitionSpeed = 0.01;
+  this.transitioning = false;
+
 }
 
 Star.prototype.render = function() {
@@ -15,14 +20,23 @@ Star.prototype.render = function() {
 	this.el.position.z = this.z;
 	this.el.position.x = this.x;
 	this.el.position.y = this.y;
+  this.el.material.transparent = true;
+  this.el.material.opacity = 0;
 
 	return this;
 
 };
 
 Star.prototype.update = function() {
-  this.el.position.z += Math.random() * (0.07 - 0.05) + 0.05; //starndard 0.06
-  this.el.position.y += Math.random() * (0.11 - 0.09) + 0.09; //starndard 0.1
+
+  this.el.position.z += Math.random() * (0.07 - 0.05) + 0.05; //standard 0.06
+  this.el.position.y += Math.random() * (0.11 - 0.09) + 0.09; //standard 0.1
+
+  if(this.transitioning) {
+    this.el.material.opacity += this.transitionSpeed;
+    if(this.el.material.opacity === 1) this.transitioning = false;
+  }
+
 };
 
 Star.prototype.checkOutOfBounds = function() {
@@ -33,5 +47,7 @@ Star.prototype.checkOutOfBounds = function() {
   return false;
 
 };
+
+
 
 module.exports = Star;

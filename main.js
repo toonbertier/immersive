@@ -2,8 +2,8 @@
 
 // Electron
 let ipc = require('ipc');
-let app = require('app');  
-let BrowserWindow = require('browser-window');  
+let app = require('app');
+let BrowserWindow = require('browser-window');
 
 // Johnny-Five
 let five = require('johnny-five');
@@ -19,7 +19,7 @@ app.on('window-all-closed', function(){
 
 app.on('ready', function(){
 
-  mainWindow = new BrowserWindow({width: 1440, height: 720});
+  mainWindow = new BrowserWindow({width: 1440, height: 900});
   mainWindow.openDevTools();
   mainWindow.loadUrl('file://' + __dirname + '/index.html');
 

@@ -38,7 +38,7 @@ const handleStartButton = () => {
 	let button = document.querySelector('.start');
 	let buttonDiv = document.querySelector('.start-div');
 
-	button.classList.remove('hide');
+  button.classList.remove('hide');
 	button.addEventListener('click', (e) => {
 		e.preventDefault();
 		buttonDiv.parentNode.removeChild(buttonDiv);
@@ -47,6 +47,9 @@ const handleStartButton = () => {
 
 		draw();
 	});
+
+  button.click();
+
 };
 
 const setupThreeJS = () => {
@@ -70,14 +73,19 @@ const setupThreeJS = () => {
 const setupScenery = () => {
 	return new Promise((resolve, reject) => {
 		for(let i = 0; i < 300; i++) {
-			stars.push(getStar());
+			stars.push(getStar(0));
 		}
-		return Promise.all([createAsteroid(), createEarth()]).then(() => resolve(true));
+    return Promise.all([createEarth(0, -256, 300)]).then(() => resolve(true));
+		// return Promise.all([createAsteroid(), createEarth()]).then(() => resolve(true));
 	});
 };
 
 const setupAudio = () => {
 	return new Promise((resolve, reject) => {
+
+    soundtrack = document.querySelector('.soundtrack');
+    timeline = new Timeline();
+    addTimelineListeners();
 
   	player = new Player();
     player.loadSoundData().then(data => {
@@ -85,11 +93,16 @@ const setupAudio = () => {
       return resolve(true);
     });
 
-		soundtrack = document.querySelector('.soundtrack');
-		timeline = new Timeline();
-
 	});
 
+};
+
+const addTimelineListeners = () => {
+  window.bean.on(timeline, 'arrived_in_space', () => {
+    earth.moveTo(0, -220, 300);
+    stars.forEach(s => s.transitioning = true);
+
+  });
 };
 
 const draw = () => {
@@ -101,17 +114,17 @@ const draw = () => {
 	camera.move();
 
   handleScenery();
-	if(asteroid.el && asteroid.detectCollision(camera.el.position)) camera.shake();
+	if(asteroid && asteroid.el && asteroid.detectCollision(camera.el.position)) camera.shake();
 	requestAnimationFrame(draw);
 
 };
 
 // CREATING SCENERY
 
-const createEarth = () => {
+const createEarth = (x, y, z) => {
 
 	return new Promise((resolve, reject) => {
-		earth = new Earth();
+		earth = new Earth(x, y, z);
 
 	  earth.render().then(_earth => {
 	  	scene.add(_earth.el);
@@ -138,11 +151,12 @@ const createAsteroid = () => {
 
 };
 
-const getStar = () => {
+const getStar = (autoOpacityChange) => {
 
 	let star = new Star();
 	star.render();
 	scene.add(star.el);
+  if(autoOpacityChange) star.transitioning = true;
 	return star;
 
 };
@@ -157,7 +171,7 @@ const handleScenery = () => {
 
 const handleAsteroid = () => {
 
-	if(asteroid.el && earth.el) {
+	if(asteroid && asteroid.el && earth.el) {
 		if(asteroid.checkOutOfBounds()) {
       scene.remove(asteroid.el);
 			createAsteroid();
@@ -176,7 +190,7 @@ const handleStars = () => {
     if(star.checkOutOfBounds()){
       scene.remove(star.el);
       helpers.removeFromArray(stars, stars.findIndex(s => s.el.uuid == star.el.uuid));
-      stars.push(getStar());
+      stars.push(getStar(1));
     }
 
 	});

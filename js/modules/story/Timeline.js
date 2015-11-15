@@ -19,7 +19,8 @@ Timeline.prototype.handleTime = function(time) {
 			break;
 
 		case 1:
-			if(time > 8.57) {
+      if(time > 8) {
+			// if(time > 1) {
 				this.startScene(2);
 			}
 			break;
@@ -94,11 +95,13 @@ Timeline.prototype.startScene = function(scene_id) {
 	switch(scene_id) {
 		case 1:
 			console.log(this.time, 'scene 1: trillen');
+
 			//code voor scene
 		break;
 
 		case 2:
 			console.log(this.time, 'scene 2: start ost, aarde zichtbaar');
+      window.bean.fire(this, 'arrived_in_space');
 			//code voor scene
 		break;
 
