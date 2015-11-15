@@ -25,6 +25,8 @@ Asteroid.prototype.render = function() {
 			this.el.position.z = this.z;
 			this.el.position.x = this.x;
 			this.el.position.y = this.y;
+      this.el.material.transparent = true;
+      this.el.material.opacity = 0;
 
 			return resolve(this);
 
@@ -36,9 +38,11 @@ Asteroid.prototype.render = function() {
 
 Asteroid.prototype.update = function() {
 
-	this.el.position.z += 3;
+	this.el.position.z += 8;
 	this.el.rotation.x += 0.01;
 	this.el.rotation.y += 0.005;
+  if(this.el.material.opacity < 1) this.el.material.opacity += 0.1;
+
   this.checkPassing();
 
 };

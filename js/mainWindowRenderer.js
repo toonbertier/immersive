@@ -98,11 +98,24 @@ const setupAudio = () => {
 };
 
 const addTimelineListeners = () => {
-  window.bean.on(timeline, 'arrived_in_space', () => {
-    earth.moveTo(0, -220, 300);
-    stars.forEach(s => s.transitioning = true);
+
+  window.bean.on(timeline, 'timeline_event', e => {
+
+    switch(e) {
+
+      case 'arrived_in_space':
+        earth.moveTo(0, -220, 300);
+        stars.forEach(s => s.transitioning = true);
+        break;
+
+      case 'start_comets':
+        createAsteroid();
+        break;
+
+    }
 
   });
+
 };
 
 const draw = () => {
