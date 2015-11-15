@@ -19,8 +19,8 @@ Timeline.prototype.handleTime = function(time) {
 			break;
 
 		case 1:
-      if(time > 8) {
-			// if(time > 1) {
+      // if(time > 8) {
+			if(time > 1) {
 				this.startScene(2);
 			}
 			break;

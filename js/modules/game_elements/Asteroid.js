@@ -2,7 +2,7 @@
 
 function Asteroid() {
 
-	this.z = -500;
+	this.z = -400;
 	this.x = Math.random() * 80 - 40;
 	this.y = Math.random() * 20 - 10;
 	this.radius = Math.random() * (8 - 1) + 1;
