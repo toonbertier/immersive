@@ -5,13 +5,11 @@
 let ipc = require('ipc');
 let helpers = require('./js/modules/helpers/helpers');
 let Camera = require('./js/modules/studio/Camera');
-let BufferLoader = require('./js/modules/sound/BufferLoader');
 let Player = require('./js/modules/sound/Player');
 let Asteroid = require('./js/modules/game_elements/Asteroid');
 let Star = require('./js/modules/game_elements/Star');
 let Earth = require('./js/modules/game_elements/Earth');
 let Timeline = require('./js/modules/story/Timeline');
-let soundData = require('./assets/sounds/sounds.js');
 window.bean = require('./js/libs/bean/bean.min.js');
 
 let stars = [];
@@ -80,31 +78,16 @@ const setupScenery = () => {
 
 const setupAudio = () => {
 	return new Promise((resolve, reject) => {
-  	window.AudioContext =
-    	window.AudioContext ||
-    	window.webkitAudioContext;
 
-		audioCtx = new AudioContext();
-  	player = new Player(audioCtx);
+  	player = new Player();
+    player.loadSoundData().then(data => {
+      soundFX = data
+      return resolve(true);
+    });
+
 		soundtrack = document.querySelector('.soundtrack');
-
 		timeline = new Timeline();
 
-  	loadSoundData(soundData).then(data => {
-  		soundFX = data
-  		return resolve(true);
-  	});
-	});
-
-};
-
-const loadSoundData = sounds => {
-
-	return new Promise((resolve, reject) => {
-		let loader = new BufferLoader(audioCtx);
-	  loader.load(sounds).then(data => {
-	  	return resolve(data);
-	  });
 	});
 
 };
@@ -144,11 +127,7 @@ const createAsteroid = () => {
 	return new Promise((resolve, reject) => {
 
     asteroid = new Asteroid();
-    window.bean.on(asteroid, 'passing', () => {
-
-      player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, camera.el.position.x));
-
-    });
+    window.bean.on(asteroid, 'passing', () => player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, camera.el.position.x)));
 
 	  asteroid.render().then(_asteroid => {
 	  	scene.add(_asteroid.el);

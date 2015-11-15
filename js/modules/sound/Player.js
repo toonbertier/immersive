@@ -1,9 +1,17 @@
 'use strict';
 
 let helpers = require('../helpers/helpers');
+let BufferLoader = require('./BufferLoader');
+let soundData = require('../../../assets/sounds/sounds.js');
 
 function Player(ctx) {
-  this.ctx = ctx;
+
+  window.AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+  this.ctx = new AudioContext();
+
 }
 
 Player.prototype.play = function(sound, panning) {
@@ -21,9 +29,20 @@ Player.prototype.play = function(sound, panning) {
 
 };
 
-Player.prototype.calculatePanning = function(asteroidX, cameraX){
+Player.prototype.calculatePanning = function(asteroidX, cameraX) {
   let difference = asteroidX - cameraX;
   return helpers.mapRange(difference, -70, 70, -1, 1);
+};
+
+Player.prototype.loadSoundData = function() {
+
+  return new Promise((resolve, reject) => {
+    let loader = new BufferLoader(this.ctx);
+    loader.load(soundData).then(data => {
+      return resolve(data);
+    });
+  });
+
 };
 
 module.exports = Player
