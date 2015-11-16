@@ -1,5 +1,7 @@
 'use strict';
 
+let helpers = require('../helpers/helpers');
+
 function Camera() {
 
   this.el = new THREE.PerspectiveCamera(50, 1440/720 , 1, 100000);
@@ -10,8 +12,8 @@ function Camera() {
   this.shakedFrames = 0;
   this.x = 0;
   this.y = 0;
-  this.rad = 0;
-  this.rotation = 0;
+  this.deg = 0;
+  this.speed = 0;
 
   // this.sliderX = document.createElement("input");
   // this.sliderX.setAttribute('type', 'range');
@@ -57,13 +59,17 @@ Camera.prototype.shake = function() {
 
 Camera.prototype.move = function() {
 
-  this.x = 250 * Math.sin(this.rad);
-  this.y = 250 * Math.cos(this.rad)-250;
+  this.deg += this.speed;
 
-  this.el.rotation.z += (-this.rad - this.el.rotation.z) * 0.05;
+  let rad = helpers.toRadians(this.deg);
 
-  this.el.position.x += (this.x - this.el.position.x) * 0.05;
-  this.el.position.y += (this.y - this.el.position.y) * 0.05;
+  this.x = 250 * Math.sin(rad);
+  this.y = 250 * Math.cos(rad) - 250;
+
+  this.el.rotation.z += (-rad - this.el.rotation.z) * 0.2;
+
+  this.el.position.x += (this.x - this.el.position.x) * 0.2;
+  this.el.position.y += (this.y - this.el.position.y) * 0.2;
 
   //this.t = this.x; //t is de positie op de cirkel, ik stel die gelijk aan x zodat je met potmeter erover kan gan voor testen
 

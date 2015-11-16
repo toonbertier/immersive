@@ -211,8 +211,7 @@ const handleStars = () => {
 };
 
 ipc.on('move', function(val) {
-	camera.rad = helpers.toRadians(helpers.mapRange(val, 0, 1023, -30, 30));
-  camera.rotation ++;
+	camera.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
 });
 
 setup();
