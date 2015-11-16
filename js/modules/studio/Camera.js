@@ -14,29 +14,6 @@ function Camera() {
   this.y = 0;
   this.deg = 0;
   this.speed = 0;
-
-  // this.sliderX = document.createElement("input");
-  // this.sliderX.setAttribute('type', 'range');
-  // this.sliderX.setAttribute('min', '0');
-  // this.sliderX.setAttribute('max', '1000');
-  // this.sliderX.setAttribute('class', 'sliderX');
-  // document.body.appendChild(this.sliderX);
-
-  // this.sliderY = document.createElement("input");
-  // this.sliderY.setAttribute('type', 'range');
-  // this.sliderY.setAttribute('min', '0');
-  // this.sliderY.setAttribute('max', '1000');
-  // this.sliderY.setAttribute('class', 'sliderY');
-  // document.body.appendChild(this.sliderY);
-
-  // this.sliderZ = document.createElement("input");
-  // this.sliderZ.setAttribute('type', 'range');
-  // this.sliderZ.setAttribute('min', '0');
-  // this.sliderZ.setAttribute('max', '1000');
-  // this.sliderZ.setAttribute('class', 'sliderZ');
-  // document.body.appendChild(this.sliderZ);
-
-
 }
 
 Camera.prototype.shake = function() {
@@ -59,27 +36,21 @@ Camera.prototype.shake = function() {
 
 Camera.prototype.move = function() {
 
-  this.deg += this.speed;
+  let newDeg = this.deg + this.speed;
+
+  if(newDeg > -70 && newDeg < 70) {
+    this.deg = newDeg;
+  }
 
   let rad = helpers.toRadians(this.deg);
 
   this.x = 250 * Math.sin(rad);
   this.y = 250 * Math.cos(rad) - 250;
 
-  this.el.rotation.z += (-rad - this.el.rotation.z) * 0.2;
+  this.el.rotation.z += ((-rad - this.speed * 0.4) - this.el.rotation.z) * 0.2;
 
   this.el.position.x += (this.x - this.el.position.x) * 0.2;
   this.el.position.y += (this.y - this.el.position.y) * 0.2;
-
-  //this.t = this.x; //t is de positie op de cirkel, ik stel die gelijk aan x zodat je met potmeter erover kan gan voor testen
-
-  // this.el.position.x = (Math.sin( this.t/this.sliderX.value) * 100);
-  // this.el.position.y = (Math.cos( this.t/this.sliderY.value) * 100)-100; //-100 voor te late zakken
-  // this.el.position.z = this.sliderZ.value;
-
-  // console.log('x', this.sliderX.value);
-  // console.log('y', this.sliderY.value);
-  // console.log('z', this.sliderZ.value);
 
 };
 
