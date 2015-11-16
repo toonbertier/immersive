@@ -10,6 +10,8 @@ function Camera() {
   this.shakedFrames = 0;
   this.x = 0;
   this.y = 0;
+  this.rad = 0;
+  this.rotation = 0;
 
   // this.sliderX = document.createElement("input");
   // this.sliderX.setAttribute('type', 'range');
@@ -54,6 +56,12 @@ Camera.prototype.shake = function() {
 };
 
 Camera.prototype.move = function() {
+
+  this.x = 250 * Math.sin(this.rad);
+  this.y = 250 * Math.cos(this.rad)-250;
+
+  this.el.rotation.z += (-this.rad - this.el.rotation.z) * 0.05;
+
   this.el.position.x += (this.x - this.el.position.x) * 0.05;
   this.el.position.y += (this.y - this.el.position.y) * 0.05;
 
