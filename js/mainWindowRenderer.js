@@ -13,7 +13,7 @@ let Timeline = require('./js/modules/story/Timeline');
 window.bean = require('./js/libs/bean/bean.min.js');
 
 let stars = [];
-let earth, asteroid;
+let earth, asteroid, laser;
 let camera, scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
 
@@ -43,7 +43,9 @@ const handleStartButton = () => {
 		e.preventDefault();
 		buttonDiv.parentNode.removeChild(buttonDiv);
 		soundtrack.play();
-		// soundtrack.muted = true;
+
+    // debug mute
+		soundtrack.muted = true;
 
 		draw();
 	});
@@ -67,6 +69,7 @@ const setupThreeJS = () => {
 	let light = new THREE.DirectionalLight(0xffffff);
 	light.position.set(0, 1, 1).normalize();
 	scene.add(light);
+  scene.add(camera.laser);
 
 };
 
@@ -75,6 +78,7 @@ const setupScenery = () => {
 		for(let i = 0; i < 300; i++) {
 			stars.push(getStar(0));
 		}
+
     return Promise.all([createEarth(0, -256, 300)]).then(() => resolve(true));
 		// return Promise.all([createAsteroid(), createEarth()]).then(() => resolve(true));
 	});
