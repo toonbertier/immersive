@@ -4,7 +4,7 @@
 
 let ipc = require('ipc');
 let helpers = require('./js/modules/helpers/helpers');
-let Camera = require('./js/modules/studio/Camera');
+let Robot = require('./js/modules/studio/Robot');
 let Player = require('./js/modules/sound/Player');
 let Asteroid = require('./js/modules/game_elements/Asteroid');
 let Star = require('./js/modules/game_elements/Star');
@@ -13,6 +13,7 @@ let Timeline = require('./js/modules/story/Timeline');
 window.bean = require('./js/libs/bean/bean.min.js');
 
 let stars = [];
+let robot;
 let earth, asteroid, laser;
 let camera, scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
@@ -23,7 +24,7 @@ const setup = () => {
 
 	setupThreeJS();
 	Promise.all([setupScenery(), setupAudio()]).then(() => {
-		renderer.render(scene, camera.el);
+		renderer.render(scene, robot.camera);
 		removeLoading();
 		handleStartButton();
 	});
@@ -56,7 +57,9 @@ const handleStartButton = () => {
 
 const setupThreeJS = () => {
 
-  camera = new Camera();
+  robot = new Robot();
+  robot.createCamera();
+
 	scene = new THREE.Scene();
 
 	renderer = new THREE.WebGLRenderer();
@@ -69,7 +72,6 @@ const setupThreeJS = () => {
 	let light = new THREE.DirectionalLight(0xffffff);
 	light.position.set(0, 1, 1).normalize();
 	scene.add(light);
-  scene.add(camera.laser);
 
 };
 
@@ -80,7 +82,6 @@ const setupScenery = () => {
 		}
 
     return Promise.all([createEarth(0, -256, 300)]).then(() => resolve(true));
-		// return Promise.all([createAsteroid(), createEarth()]).then(() => resolve(true));
 	});
 };
 
@@ -124,14 +125,21 @@ const addTimelineListeners = () => {
 
 const draw = () => {
 
-	effect.render(scene, camera.el);
+	effect.render(scene, robot.camera);
 	timeline.handleTime(soundtrack.currentTime);
 
-	if(camera.isShaking) camera.shake();
-	camera.move();
-
   handleScenery();
-	if(asteroid && asteroid.el && asteroid.detectCollision(camera.el.position)) camera.shake();
+
+	if(robot.isShaking) robot.shakeCamera();
+	robot.moveCamera();
+
+	if(asteroid && asteroid.el && asteroid.detectCollision(robot.camera.position)) robot.shakeCamera();
+
+  if(robot.lasers != null) {
+    robot.moveLasers();
+    window.bean.on(robot, 'removeLaser', laser => scene.remove(laser));
+  }
+
 	requestAnimationFrame(draw);
 
 };
@@ -215,7 +223,12 @@ const handleStars = () => {
 };
 
 ipc.on('move', function(val) {
-	camera.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
+	robot.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
+});
+
+ipc.on('shootLaser', function() {
+  console.log('shoot lazooor');
+  scene.add(robot.createLaser());
 });
 
 setup();

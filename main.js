@@ -37,14 +37,20 @@ const initBoard = () => {
      freq: 250
   });
 
+  let laserButton = new five.Button(8);
+
   board.repl.inject({
-    pot: potentiometer
+    pot: potentiometer,
+    laserButton: laserButton
   });
 
   potentiometer.on("data", function(){
-    console.log(this.raw);
     let value = this.raw;
     mainWindow.webContents.send('move', value);
+  });
+
+  laserButton.on("down", function(){
+    mainWindow.webContents.send('shootLaser');
   });
 }
 
