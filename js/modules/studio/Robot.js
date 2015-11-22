@@ -28,18 +28,23 @@ Robot.prototype.createCamera = function() {
 
 Robot.prototype.createLaser = function() {
 
-  let laserGeometry = new THREE.BoxGeometry(2, 2, 10);
+  let laserGeometry = new THREE.BoxGeometry(1, 1, 5);
   let laserMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
   let laser = new THREE.Mesh(laserGeometry, laserMaterial);
 
+  // laser.position.x = 20 * Math.cos(this.camera.rotation.z) + this.x; //Math.cos(this.camera.rotation.z);
+  // laser.position.y = this.y;
+
   if(this.alternateCannon) {
-    laser.position.x = this.x - 20;
+    laser.position.x = this.x - 40;
+    laser.cannon = 'left';
   } else {
-    laser.position.x = this.x + 20;
+    laser.position.x = this.x + 40;
+    laser.cannon = 'right';
   }
   this.alternateCannon = !this.alternateCannon;
 
-  laser.position.y = this.y - 20;
+  laser.position.y = 0;
   laser.position.z = 350;
 
   this.lasers.push(laser);
@@ -86,6 +91,13 @@ Robot.prototype.moveCamera = function() {
 
 };
 
+Robot.prototype.handleLasers = function(collisionObj) {
+  if(collisionObj != null) {
+    this.detectLaserColliction(collisionObj);
+  }
+  this.moveLasers();
+}
+
 Robot.prototype.moveLasers = function() {
 
   this.lasers.forEach(laser => {
@@ -97,6 +109,37 @@ Robot.prototype.moveLasers = function() {
     }
 
     laser.position.z -= 8;
+    if(laser.cannon == 'right') {
+      laser.position.x -= 0.4;
+    } else {
+      laser.position.x += 0.4;
+    }
+
+  });
+
+};
+
+Robot.prototype.detectLaserColliction = function(collisionObj) {
+
+  let radius = null;
+
+  if(collisionObj.type == "Mesh") {
+    radius = collisionObj.geometry.boundingSphere.radius;
+  }
+
+  this.lasers.forEach(laser => {
+
+    if(laser.position.z < collisionObj.position.z + radius/2
+       && laser.position.z > collisionObj.position.z - radius/2
+       && laser.position.x < collisionObj.position.x + radius/2
+       && laser.position.x > collisionObj.position.x - radius/2
+       && laser.position.y < collisionObj.position.y + radius/2
+       && laser.position.y > collisionObj.position.y - radius/2
+    ) {
+      console.log('EXPLOOOOOODE');
+      window.bean.fire(this, 'explodeObject', [collisionObj]);
+    }
+
   });
 
 };

@@ -4,7 +4,7 @@ function Asteroid() {
 
 	this.z = -400;
 	this.x = Math.random() * 80 - 40;
-	this.y = Math.random() * 20 - 10;
+	this.y = 0;
 	this.radius = Math.random() * (8 - 1) + 1;
 
 }
@@ -38,7 +38,7 @@ Asteroid.prototype.render = function() {
 
 Asteroid.prototype.update = function() {
 
-	this.el.position.z += 8;
+	this.el.position.z += 6;
 	this.el.rotation.x += 0.01;
 	this.el.rotation.y += 0.005;
   if(this.el.material.opacity < 1) this.el.material.opacity += 0.1;

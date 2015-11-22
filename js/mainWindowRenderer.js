@@ -15,7 +15,7 @@ window.bean = require('./js/libs/bean/bean.min.js');
 let stars = [];
 let robot;
 let earth, asteroid, laser;
-let camera, scene, renderer, effect;
+let scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
 
 // SYSTEM
@@ -25,6 +25,10 @@ const setup = () => {
 	setupThreeJS();
 	Promise.all([setupScenery(), setupAudio()]).then(() => {
 		renderer.render(scene, robot.camera);
+
+    window.bean.on(robot, 'removeLaser', laser => scene.remove(laser));
+    window.bean.on(robot, 'explodeObject', obj => scene.remove(obj));
+
 		removeLoading();
 		handleStartButton();
 	});
@@ -135,9 +139,12 @@ const draw = () => {
 
 	if(asteroid && asteroid.el && asteroid.detectCollision(robot.camera.position)) robot.shakeCamera();
 
-  if(robot.lasers != null) {
-    robot.moveLasers();
-    window.bean.on(robot, 'removeLaser', laser => scene.remove(laser));
+  if(robot.lasers.length > 0) {
+    let collisionObj = null;
+    if(asteroid && asteroid.el) {
+      collisionObj = asteroid.el;
+    }
+    robot.handleLasers(collisionObj);
   }
 
 	requestAnimationFrame(draw);
@@ -165,7 +172,7 @@ const createAsteroid = () => {
 	return new Promise((resolve, reject) => {
 
     asteroid = new Asteroid();
-    window.bean.on(asteroid, 'passing', () => player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, camera.el.position.x)));
+    window.bean.on(asteroid, 'passing', () => player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, robot.camera.position.x)));
 
 	  asteroid.render().then(_asteroid => {
 	  	scene.add(_asteroid.el);
