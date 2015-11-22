@@ -6,7 +6,7 @@ function Robot() {
   this.x = 0;
   this.y = 0;
   this.z = 400;
-  this.deg = 0;
+  this.deg = 90;
   this.speed = 0;
 
   this.lasers = [];
@@ -28,23 +28,24 @@ Robot.prototype.createCamera = function() {
 
 Robot.prototype.createLaser = function() {
 
-  let laserGeometry = new THREE.BoxGeometry(1, 1, 5);
-  let laserMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+  let laserGeometry = new THREE.BoxGeometry(0.6, 0.6, 5);
+  let laserMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
   let laser = new THREE.Mesh(laserGeometry, laserMaterial);
 
   // laser.position.x = 20 * Math.cos(this.camera.rotation.z) + this.x; //Math.cos(this.camera.rotation.z);
   // laser.position.y = this.y;
 
-  if(this.alternateCannon) {
-    laser.position.x = this.x - 40;
-    laser.cannon = 'left';
-  } else {
-    laser.position.x = this.x + 40;
-    laser.cannon = 'right';
-  }
-  this.alternateCannon = !this.alternateCannon;
+  // if(this.alternateCannon) {
+  //   laser.position.x = this.x - 20;
+  //   laser.cannon = 'left';
+  // } else {
+  //   laser.position.x = this.x + 20;
+  //   laser.cannon = 'right';
+  // }
+  // this.alternateCannon = !this.alternateCannon;
 
-  laser.position.y = 0;
+  laser.position.x = this.x;
+  laser.position.y = this.y;
   laser.position.z = 350;
 
   this.lasers.push(laser);
@@ -75,16 +76,18 @@ Robot.prototype.moveCamera = function() {
 
   let newDeg = this.deg + this.speed;
 
-  if(newDeg > -70 && newDeg < 70) {
+  if(newDeg > 20 && newDeg < 160) {
     this.deg = newDeg;
   }
 
   let rad = helpers.toRadians(this.deg);
 
-  this.x = 250 * Math.sin(rad);
-  this.y = 250 * Math.cos(rad) - 250;
+  this.x = 250 * Math.cos(rad);
+  this.y = 250 * Math.sin(rad) - 250;
 
-  this.camera.rotation.z += ((-rad - this.speed * 0.4) - this.camera.rotation.z) * 0.2;
+  this.camera.rotation.z += (((rad - Math.PI / 2) + this.speed * 0.4) - this.camera.rotation.z) * 0.2;
+
+  //this.camera.rotation.z += ((-rad - this.speed * 0.4) - this.camera.rotation.z) * 0.2;
 
   this.camera.position.x += (this.x - this.camera.position.x) * 0.2;
   this.camera.position.y += (this.y - this.camera.position.y) * 0.2;
@@ -129,12 +132,12 @@ Robot.prototype.detectLaserColliction = function(collisionObj) {
 
   this.lasers.forEach(laser => {
 
-    if(laser.position.z < collisionObj.position.z + radius/2
-       && laser.position.z > collisionObj.position.z - radius/2
-       && laser.position.x < collisionObj.position.x + radius/2
-       && laser.position.x > collisionObj.position.x - radius/2
-       && laser.position.y < collisionObj.position.y + radius/2
-       && laser.position.y > collisionObj.position.y - radius/2
+    if(laser.position.z < collisionObj.position.z + radius
+       && laser.position.z > collisionObj.position.z - radius
+       && laser.position.x < collisionObj.position.x + radius
+       && laser.position.x > collisionObj.position.x - radius
+       && laser.position.y < collisionObj.position.y + radius
+       && laser.position.y > collisionObj.position.y - radius
     ) {
       console.log('EXPLOOOOOODE');
       window.bean.fire(this, 'explodeObject', [collisionObj]);

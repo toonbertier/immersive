@@ -26,9 +26,6 @@ const setup = () => {
 	Promise.all([setupScenery(), setupAudio()]).then(() => {
 		renderer.render(scene, robot.camera);
 
-    window.bean.on(robot, 'removeLaser', laser => scene.remove(laser));
-    window.bean.on(robot, 'explodeObject', obj => scene.remove(obj));
-
 		removeLoading();
 		handleStartButton();
 	});
@@ -63,6 +60,8 @@ const setupThreeJS = () => {
 
   robot = new Robot();
   robot.createCamera();
+  window.bean.on(robot, 'removeLaser', laser => scene.remove(laser));
+  window.bean.on(robot, 'explodeObject', obj => scene.remove(obj));
 
 	scene = new THREE.Scene();
 
@@ -115,10 +114,15 @@ const addTimelineListeners = () => {
       case 'arrived_in_space':
         earth.moveTo(0, -220, 300);
         stars.forEach(s => s.transitioning = true);
+
+        // debug
+
+        createAsteroid();
+
         break;
 
       case 'start_comets':
-        createAsteroid();
+        //createAsteroid();
         break;
 
     }

@@ -1,10 +1,17 @@
 'use strict';
 
+let helpers = require('../helpers/helpers');
+
 function Asteroid() {
 
+  let deg = Math.random() * 40 + 70;
+  let rad = helpers.toRadians(deg);
+
 	this.z = -400;
-	this.x = Math.random() * 80 - 40;
-	this.y = 0;
+  this.x = 250 * Math.cos(rad);
+  this.y = 250 * Math.sin(rad) - 250;
+	// this.x = Math.random() * 80 - 40;
+	// this.y = 0;
 	this.radius = Math.random() * (8 - 1) + 1;
 
 }
