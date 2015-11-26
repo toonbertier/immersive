@@ -76,7 +76,7 @@ Asteroid.prototype.checkOutOfBounds = function() {
 Asteroid.prototype.checkPassing = function() {
   if(this.el.position.z >= 214 && this.el.position.z <= 216) {
     window.bean.fire(this, 'passing');
-    // player.play(soundFX[1]);
+    player.play(soundFX[1]);
   }
 };
 

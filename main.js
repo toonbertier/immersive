@@ -12,6 +12,7 @@ let board = five.Board();
 let mainWindow = null;
 
 app.on('window-all-closed', function(){
+  console.log('closing');
   if (process.platform != 'darwin') {
     app.quit();
   }

@@ -19,11 +19,13 @@ Player.prototype.play = function(sound, panning) {
   let sourceNode = this.ctx.createBufferSource();
   sourceNode.buffer = sound;
 
-  let panNode = this.ctx.createStereoPanner();
-  panNode.pan.value = panning;
+  // let panNode = this.ctx.createStereoPanner();
+  // panNode.pan.value = panning;
 
-  sourceNode.connect(panNode);
-  panNode.connect(this.ctx.destination);
+  // sourceNode.connect(panNode);
+  // panNode.connect(this.ctx.destination);
+
+  sourceNode.connect(this.ctx.destination);
 
   sourceNode.start(0);
 

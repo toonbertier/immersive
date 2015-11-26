@@ -239,6 +239,7 @@ ipc.on('move', function(val) {
 
 ipc.on('shootLaser', function() {
   console.log('shoot lazooor');
+  player.play(soundFX[2]);
   scene.add(robot.createLaser());
 });
 

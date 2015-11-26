@@ -12,7 +12,7 @@ BufferLoader.prototype.decode = function(buffer) {
       if(!data) return reject(new Error('error while decoding'));
       return resolve(data);
     });
-  }); 
+  });
 }
 
 BufferLoader.prototype.loadBuffer = function(url) {
