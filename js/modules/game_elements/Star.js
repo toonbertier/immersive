@@ -3,8 +3,8 @@
 function Star() {
 
 	this.z = Math.random() * 300 - 150;
-	this.x = Math.random() * 500 - 250;
-	this.y = Math.random() * 300 - 150;
+	this.x = Math.random() * 1200 - 600;
+	this.y = Math.random() * 600 - 450;
 
   this.transitionSpeed = 0.01;
   this.transitioning = false;

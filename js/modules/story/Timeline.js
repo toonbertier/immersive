@@ -116,12 +116,14 @@ Timeline.prototype.startScene = function(scene_id) {
 		break;
 
 		case 5:
-			console.log(this.time, 'scene 5: boodschap komeet');
+			console.log(this.time, 'scene 5: alarm asteroid');
+      window.bean.fire(this, 'timeline_event', 'alarm_asteroid');
 			//code voor scene
 		break;
 
 		case 6:
 			console.log(this.time, 'scene 6: versnelling naar kometengroep');
+      window.bean.fire(this, 'timeline_event', 'speed_up');
 			//code voor scene
 		break;
 

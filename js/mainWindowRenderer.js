@@ -47,7 +47,7 @@ const handleStartButton = () => {
 		soundtrack.play();
 
     // debug mute
-		soundtrack.muted = true;
+		// soundtrack.muted = true;
 
 		draw();
 	});
@@ -80,7 +80,7 @@ const setupThreeJS = () => {
 
 const setupScenery = () => {
 	return new Promise((resolve, reject) => {
-		for(let i = 0; i < 300; i++) {
+		for(let i = 0; i < 350; i++) {
 			stars.push(getStar(0));
 		}
 
@@ -114,16 +114,22 @@ const addTimelineListeners = () => {
       case 'arrived_in_space':
         earth.moveTo(0, -220, 300);
         stars.forEach(s => s.transitioning = true);
+        break;
 
-        // debug
+      case 'alarm_asteroid':
+        showAlarm();
+        break;
 
-        createAsteroid();
-
+      case 'speed_up':
+        hideAlarm();
+        earth.rotationSpeed = 0.0009;
+        earth.moveTo(0, -250, 360);
         break;
 
       case 'start_comets':
-        //createAsteroid();
+        createAsteroid();
         break;
+
 
     }
 
@@ -233,12 +239,24 @@ const handleStars = () => {
 
 };
 
+const showAlarm = () => {
+  console.log('ALARM ALARM');
+
+  let alarmDiv = document.querySelector('.alarm-div');
+  alarmDiv.classList.remove('hide');
+
+};
+
+const hideAlarm = () => {
+  let alarmDiv = document.querySelector('.alarm-div');
+  alarmDiv.classList.add('hide');
+}
+
 ipc.on('move', function(val) {
 	robot.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
 });
 
 ipc.on('shootLaser', function() {
-  console.log('shoot lazooor');
   player.play(soundFX[2]);
   scene.add(robot.createLaser());
 });

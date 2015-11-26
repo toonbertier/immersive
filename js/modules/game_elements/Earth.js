@@ -6,6 +6,7 @@ function Earth(x, y, z) {
 
 	this.position = {x, y, z};
   this.target = {};
+  this.rotationSpeed = 0.0005;
   this.inverseSpeed = 100;
   this.moving = false;
 
@@ -40,7 +41,7 @@ Earth.prototype.render = function() {
 
 Earth.prototype.update = function() {
 
-	this.el.rotation.x += 0.0005;
+	this.el.rotation.x += this.rotationSpeed;
 
   if(this.moving) {
 
