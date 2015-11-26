@@ -1,37 +1,37 @@
-# Hardware
+## Hardware
 
-## Aansturen
+### Aansturen
 
-LED-strips
-Lichten
-Buttons
-Versterker + luidsprekers
+* LED-strips
+* Lichten
+* Buttons
+* Versterker + luidsprekers
 
-## Thematisatie
+### Thematisatie
 
-Kist aankleden
-Raket voor achterkant
-Vleugels
-Hoofd maken
-Hoofd aankleden
+* Kist aankleden
+* Raket voor achterkant
+* Vleugels
+* Hoofd maken
+* Hoofd aankleden
 
-# Software
+## Software
 
-## Verhaal
+### Verhaal
 
-Uitleg tonen (hoe vliegen? hoe schieten?)
-Space debris aanmaken
-Alarm tonen
-Vliegen naar grote komeet
-Grote komeet aanmaken
-Boodschap aarde gered
-Credits
+* Uitleg tonen (hoe vliegen? hoe schieten?)
+* Space debris aanmaken
+* Alarm tonen
+* Vliegen naar grote komeet
+* Grote komeet aanmaken
+* Boodschap aarde gered
+* Credits
 
-## Algemeen
+### Algemeen
 
-HUD/Mikker?
-Explosies
+* HUD/Mikker?
+* Explosies
 
-# Andere
+## Andere
 
-Alles samensteken :D
+* Alles samensteken :D
