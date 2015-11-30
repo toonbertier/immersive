@@ -9,10 +9,11 @@ let Player = require('./js/modules/sound/Player');
 let Asteroid = require('./js/modules/game_elements/Asteroid');
 let Star = require('./js/modules/game_elements/Star');
 let Earth = require('./js/modules/game_elements/Earth');
+let SpaceDebris = require('./js/modules/game_elements/SpaceDebris');
 let Timeline = require('./js/modules/story/Timeline');
 window.bean = require('./js/libs/bean/bean.min.js');
 
-let stars = [];
+let stars = [], spaceDebris = [];
 let robot;
 let earth, asteroid, laser;
 let scene, renderer, effect;
@@ -47,7 +48,7 @@ const handleStartButton = () => {
 		soundtrack.play();
 
     // debug mute
-		// soundtrack.muted = true;
+		soundtrack.muted = true;
 
 		draw();
 	});
@@ -84,7 +85,7 @@ const setupScenery = () => {
 			stars.push(getStar(0));
 		}
 
-    return Promise.all([createEarth(0, -256, 300)]).then(() => resolve(true));
+    return Promise.all([createEarth(0, -256, 300), createSpaceDebris()]).then(() => resolve(true));
 	});
 };
 
@@ -174,6 +175,19 @@ const createEarth = (x, y, z) => {
 	  });
 
 	});
+
+};
+
+const createSpaceDebris = () => {
+
+  return new Promise((resolve, reject) => {
+    spaceDebris[0] = new SpaceDebris();
+
+    spaceDebris[0].render().then(_m => {
+      scene.add(_m);
+      return resolve(_m);
+    });
+  });
 
 };
 
