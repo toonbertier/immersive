@@ -1,6 +1,30 @@
+/*
+
+TODO:
+
+selectRandom
+renderRandom
+outOfBounds -> selectNewRandom
+
+*/
+
 'use strict';
 
 let helpers = require('../helpers/helpers');
+let loadedModels = [];
+let modelData =
+[
+ {
+    "name": "solarStation",
+    "file": "./assets/models/solarStation/solarStationModel.json",
+    "scale": 2
+ },
+ {
+    "name": "comDish",
+    "file": "./assets/models/comDish/comDishModel.json",
+    "scale": 0.2
+ }
+]
 
 function SpaceDebris() {
 
@@ -9,47 +33,58 @@ function SpaceDebris() {
 
   this.x = 0;
   this.y = 0;
-  this.z = 300;
+  this.z = -100;
   this.rotationSpeed = 0.0005;
 
 }
 
-SpaceDebris.prototype.render = function() {
+SpaceDebris.prototype.loadAll = function() {
 
   return new Promise((resolve, reject) => {
 
-    let mtlLoader = new THREE.MTLLoader();
-    let objLoader = new THREE.OBJLoader();
+    let _arr = [];
 
-    mtlLoader.load('./assets/models/solarStation/solarStation.mtl', _ma => {
-      console.log(_ma);
+    modelData.forEach(data => {
+      _arr.push(this.loadJSONModel(data));
     });
 
-    // mtlLoader.load('./assets/models/comDish/comDish.mtl', _ma => {
-    //   objLoader.load('./assets/models/comDish/comDish.obj', _mo => {
-
-    //     console.log(_ma);
-
-    //     _mo.position.x = this.x;
-    //     _mo.position.y = this.y;
-    //     _mo.position.z = this.z;
-
-    //     _mo.scale.x = 2;
-    //     _mo.scale.y = 2;
-    //     _mo.scale.z = 2;
-
-    //     _mo.rotation.x = 0.4;
-    //     return resolve(_mo);
-
-    //   });
-    // });
+    Promise.all(_arr).then(arr => {
+      loadedModels = arr;
+      return resolve(arr)
+    });
 
   });
+}
 
+SpaceDebris.prototype.loadJSONModel = function(data) {
+
+  return new Promise((resolve, reject) => {
+
+    let JSONLoader = new THREE.JSONLoader();
+
+    JSONLoader.load(data.file, (geometry, materials) => {
+
+      let material = new THREE.MeshFaceMaterial(materials);
+      this.el = new THREE.Mesh(geometry, material);
+
+      this.el.position.x = this.x;
+      this.el.position.y = this.y;
+      this.el.position.z = this.z;
+
+      this.el.rotation.x = 0.4;
+
+      this.el.scale.set(data.scale, data.scale, data.scale);
+
+      return resolve(this.el);
+    });
+
+  });
 };
 
 SpaceDebris.prototype.update = function() {
-
+  this.el.position.z += 1;
+  this.el.rotation.x += 0.001;
+  this.el.rotation.y += 0.005;
 };
 
 module.exports = SpaceDebris;

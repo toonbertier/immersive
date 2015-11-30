@@ -24,7 +24,7 @@ let audioCtx, player, soundFX, soundtrack, timeline;
 const setup = () => {
 
 	setupThreeJS();
-	Promise.all([setupScenery(), setupAudio()]).then(() => {
+	Promise.all([setupScenery(), setupSpaceDebris(), setupAudio()]).then(() => {
 		renderer.render(scene, robot.camera);
 
 		removeLoading();
@@ -85,9 +85,16 @@ const setupScenery = () => {
 			stars.push(getStar(0));
 		}
 
-    return Promise.all([createEarth(0, -256, 300), createSpaceDebris()]).then(() => resolve(true));
+    return Promise.all([createEarth(0, -256, 300)]).then(() => resolve(true));
 	});
 };
+
+const setupSpaceDebris = () => {
+  return new Promise((resolve, reject) => {
+    let s = new SpaceDebris();
+    s.loadAll().then(() => resolve(true));
+  });
+}
 
 const setupAudio = () => {
 	return new Promise((resolve, reject) => {
@@ -115,6 +122,10 @@ const addTimelineListeners = () => {
       case 'arrived_in_space':
         earth.moveTo(0, -220, 300);
         stars.forEach(s => s.transitioning = true);
+        break;
+
+      case 'space_debris':
+        startSpaceDebris();
         break;
 
       case 'alarm_asteroid':
@@ -178,19 +189,6 @@ const createEarth = (x, y, z) => {
 
 };
 
-const createSpaceDebris = () => {
-
-  return new Promise((resolve, reject) => {
-    spaceDebris[0] = new SpaceDebris();
-
-    spaceDebris[0].render().then(_m => {
-      scene.add(_m);
-      return resolve(_m);
-    });
-  });
-
-};
-
 const createAsteroid = () => {
 
 	return new Promise((resolve, reject) => {
@@ -214,6 +212,19 @@ const getStar = (autoOpacityChange) => {
 	scene.add(star.el);
   if(autoOpacityChange) star.transitioning = true;
 	return star;
+
+};
+
+const startSpaceDebris = () => {
+
+  return new Promise((resolve, reject) => {
+    spaceDebris[0] = new SpaceDebris();
+
+    spaceDebris[0].render().then(_m => {
+      scene.add(_m);
+      return resolve(_m);
+    });
+  });
 
 };
 

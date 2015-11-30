@@ -33,11 +33,20 @@ app.on('ready', function(){
 });
 
 const initBoard = () => {
+
+  /* I2C Config */
+
+  board.i2cConfig();
+  board.i2cRead(0x69, 6, function(bytes) {
+    console.log("Bytes read: ", bytes);
+  });
+
+  /* SENSOR Config */
+
   let potentiometer = new five.Sensor({
      pin: "A0",
      freq: 250
   });
-
   let laserButton = new five.Button(8);
 
   board.repl.inject({

@@ -112,6 +112,7 @@ Timeline.prototype.startScene = function(scene_id) {
 
 		case 4:
 			console.log(this.time, 'scene 4: sterachtige objecten laten komen en rond vliegen');
+      window.bean.fire(this, 'timeline_event', 'space_debris');
 			//code voor scene
 		break;
 
