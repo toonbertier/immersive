@@ -1,13 +1,3 @@
-/*
-
-TODO:
-
-selectRandom
-renderRandom
-outOfBounds -> selectNewRandom
-
-*/
-
 'use strict';
 
 let helpers = require('../helpers/helpers');
@@ -65,26 +55,44 @@ SpaceDebris.prototype.loadJSONModel = function(data) {
     JSONLoader.load(data.file, (geometry, materials) => {
 
       let material = new THREE.MeshFaceMaterial(materials);
-      this.el = new THREE.Mesh(geometry, material);
+      let object = new THREE.Mesh(geometry, material);
 
-      this.el.position.x = this.x;
-      this.el.position.y = this.y;
-      this.el.position.z = this.z;
+      object.position.x = this.x;
+      object.position.y = this.y;
+      object.position.z = this.z;
 
-      this.el.rotation.x = 0.4;
+      object.rotation.x = 0.4;
 
-      this.el.scale.set(data.scale, data.scale, data.scale);
+      object.scale.set(data.scale, data.scale, data.scale);
 
-      return resolve(this.el);
+      return resolve(object);
     });
 
   });
 };
 
-SpaceDebris.prototype.update = function() {
-  this.el.position.z += 1;
-  this.el.rotation.x += 0.001;
-  this.el.rotation.y += 0.005;
+SpaceDebris.prototype.selectRandomModel = function() {
+  return loadedModels[Math.floor(Math.random()*loadedModels.length)];
+}
+
+SpaceDebris.prototype.update = function(object) {
+
+    object.position.z += 6;
+    object.rotation.x += 0.001;
+    object.rotation.y += 0.005;
+
+    if(this.checkOutOfBounds) {
+      object.remove();
+    }
+
+};
+
+SpaceDebris.prototype.checkOutOfBounds = function(object) {
+  if(object.position.z > 500) {
+    console.log('out of bounds SpaceDebris');
+    return true;
+  }
+  return false;
 };
 
 module.exports = SpaceDebris;
