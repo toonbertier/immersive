@@ -13,9 +13,9 @@ let SpaceDebris = require('./js/modules/game_elements/SpaceDebris');
 let Timeline = require('./js/modules/story/Timeline');
 window.bean = require('./js/libs/bean/bean.min.js');
 
-let stars = [];
+let stars = [], spaceDebris = [];
 let robot;
-let earth, asteroid, laser,  spaceDebris;
+let earth, asteroid, laser;
 let scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
 
@@ -93,8 +93,7 @@ const setupScenery = () => {
 
 const setupSpaceDebris = () => {
   return new Promise((resolve, reject) => {
-    spaceDebris = new SpaceDebris();
-    spaceDebris.loadAll().then(() => resolve(true));
+    SpaceDebris.loadAll().then(() => resolve(true));
   });
 }
 
@@ -128,7 +127,7 @@ const addTimelineListeners = () => {
 
       case 'space_debris':
         updateSpaceDebris = true;
-        spaceDebris.selectRandomModel();
+        generateSpaceDebris();
         break;
 
       case 'alarm_asteroid':
@@ -173,7 +172,16 @@ const draw = () => {
     robot.handleLasers(collisionObj);
   }
 
-  if(updateSpaceDebris) spaceDebris.update();
+  if(updateSpaceDebris) {
+    spaceDebris.forEach(s => {
+      if(s.checkOutOfBounds()) {
+        scene.remove(s);
+        helpers.removeFromArray(spaceDebris, spaceDebris.findIndex(_s => _s.el.uuid == s.el.uuid));
+      } else {
+        s.update();
+      }
+    });
+  }
 
 	requestAnimationFrame(draw);
 
@@ -221,9 +229,13 @@ const getStar = (autoOpacityChange) => {
 
 };
 
-const createSpaceDebris = () => {
+const generateSpaceDebris = () => {
 
-  spaceDebris.update();
+  spaceDebris.push(new SpaceDebris(0, 0, -100));
+
+  spaceDebris.forEach(s => {
+    scene.add(s.el);
+  });
 
 };
 

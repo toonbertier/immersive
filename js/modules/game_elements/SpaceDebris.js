@@ -7,28 +7,16 @@ let modelData =
  {
     "name": "solarStation",
     "file": "./assets/models/solarStation/solarStationModel.json",
-    "scale": 2
+    "scale": 0.5
  },
- {
-    "name": "comDish",
-    "file": "./assets/models/comDish/comDishModel.json",
-    "scale": 0.2
- }
-]
+ // {
+ //    "name": "comDish",
+ //    "file": "./assets/models/comDish/comDishModel.json",
+ //    "scale": 0.2
+ // }
+];
 
-function SpaceDebris() {
-
-  let deg = Math.random() * 20 + 80;
-  let rad = helpers.toRadians(deg);
-
-  this.x = 0;
-  this.y = 0;
-  this.z = -100;
-  this.rotationSpeed = 0.0005;
-
-}
-
-SpaceDebris.prototype.loadAll = function() {
+SpaceDebris.loadAll = function() {
 
   return new Promise((resolve, reject) => {
 
@@ -46,7 +34,7 @@ SpaceDebris.prototype.loadAll = function() {
   });
 }
 
-SpaceDebris.prototype.loadJSONModel = function(data) {
+SpaceDebris.loadJSONModel = function(data) {
 
   return new Promise((resolve, reject) => {
 
@@ -57,9 +45,9 @@ SpaceDebris.prototype.loadJSONModel = function(data) {
       let material = new THREE.MeshFaceMaterial(materials);
       let object = new THREE.Mesh(geometry, material);
 
-      object.position.x = this.x;
-      object.position.y = this.y;
-      object.position.z = this.z;
+      object.position.x = 0;
+      object.position.y = 0;
+      object.position.z = -100;
 
       object.rotation.x = 0.4;
 
@@ -71,25 +59,38 @@ SpaceDebris.prototype.loadJSONModel = function(data) {
   });
 };
 
+function SpaceDebris(x, y, z) {
+
+  let deg = Math.random() * 20 + 80;
+  let rad = helpers.toRadians(deg);
+
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.rotationSpeed = 0.0005;
+
+  this.el = this.selectRandomModel();
+
+}
+
 SpaceDebris.prototype.selectRandomModel = function() {
   return loadedModels[Math.floor(Math.random()*loadedModels.length)];
 }
 
-SpaceDebris.prototype.update = function(object) {
+SpaceDebris.prototype.update = function() {
 
-    object.position.z += 6;
-    object.rotation.x += 0.001;
-    object.rotation.y += 0.005;
+    this.el.position.z += 3;
+    this.el.rotation.x += 0.001;
+    this.el.rotation.y += 0.005;
 
     if(this.checkOutOfBounds) {
-      object.remove();
+      this.el.remove();
     }
 
 };
 
-SpaceDebris.prototype.checkOutOfBounds = function(object) {
-  if(object.position.z > 500) {
-    console.log('out of bounds SpaceDebris');
+SpaceDebris.prototype.checkOutOfBounds = function() {
+  if(this.el.position.z > 500) {
     return true;
   }
   return false;
