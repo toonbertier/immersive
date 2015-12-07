@@ -29,6 +29,22 @@ const setup = () => {
 	Promise.all([setupScenery(), setupSpaceDebris(), setupAudio()]).then(() => {
 		renderer.render(scene, robot.camera);
 
+    document.addEventListener('keydown', function(e) {
+      switch (e.keyCode) {
+        case 37:
+          robot.speed = 0.4;
+          break;
+        case 39:
+          robot.speed = -0.4;
+          break;
+      }
+
+      document.addEventListener('keyup', function() {
+        robot.speed = 0;
+      });
+
+    });
+
 		removeLoading();
 		handleStartButton();
 	});
@@ -286,16 +302,24 @@ const showAlarm = () => {
 const hideAlarm = () => {
   let alarmDiv = document.querySelector('.alarm-div');
   alarmDiv.classList.add('hide');
+};
+
+const shootLaser = (cannon) => {
+  player.play(soundFX[2]);
+  scene.add(robot.createLaser(cannon));
 }
 
-ipc.on('move', function(val) {
-	robot.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
+// ipc.on('move', function(val) {
+// 	robot.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
+// });
+
+ipc.on('shootLeftLaser', function() {
+  shootLaser('left');
 });
 
-ipc.on('shootLaser', function() {
-  player.play(soundFX[2]);
-  scene.add(robot.createLaser());
-});
+ipc.on('shootRightLaser', function() {
+  shootLaser('right');
+})
 
 setup();
 

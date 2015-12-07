@@ -10,7 +10,6 @@ function Robot() {
   this.speed = 0;
 
   this.lasers = [];
-  this.alternateCannon = false;
 
   this.isShaking = false;
   this.shakedFrames = 0;
@@ -26,27 +25,27 @@ Robot.prototype.createCamera = function() {
 
 };
 
-Robot.prototype.createLaser = function() {
+Robot.prototype.createLaser = function(cannon) {
 
   let laserGeometry = new THREE.BoxGeometry(0.6, 0.6, 5);
   let laserMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
   let laser = new THREE.Mesh(laserGeometry, laserMaterial);
 
-  // laser.position.x = 20 * Math.cos(this.camera.rotation.z) + this.x; //Math.cos(this.camera.rotation.z);
-  // laser.position.y = this.y;
+  laser.position.z = 400;
+  let laserDeg;
 
-  // if(this.alternateCannon) {
-  //   laser.position.x = this.x - 20;
-  //   laser.cannon = 'left';
-  // } else {
-  //   laser.position.x = this.x + 20;
-  //   laser.cannon = 'right';
-  // }
-  // this.alternateCannon = !this.alternateCannon;
+  if(cannon == 'left') {
+    laserDeg = this.deg + 1.5;
+    laser.cannon = 'left';
+  } else {
+    laserDeg = this.deg - 1.5;
+    laser.cannon = 'right';
+  }
 
-  laser.position.x = this.x;
-  laser.position.y = this.y;
-  laser.position.z = 350;
+  let rad = helpers.toRadians(laserDeg);
+
+  laser.position.x = 250 * Math.cos(rad);
+  laser.position.y = 250 * Math.sin(rad) - 250;
 
   this.lasers.push(laser);
 
@@ -112,11 +111,6 @@ Robot.prototype.moveLasers = function() {
     }
 
     laser.position.z -= 8;
-    if(laser.cannon == 'right') {
-      laser.position.x -= 0.4;
-    } else {
-      laser.position.x += 0.4;
-    }
 
   });
 

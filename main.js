@@ -36,22 +36,19 @@ const initBoard = () => {
 
   /* I2C Config */
 
-  board.i2cConfig();
-  board.i2cRead(0x69, 6, function(bytes) {
-    console.log("Bytes read: ", bytes);
-  });
-
   /* SENSOR Config */
 
   let potentiometer = new five.Sensor({
      pin: "A0",
      freq: 250
   });
-  let laserButton = new five.Button(8);
+  let rightLaserButton = new five.Button(8);
+  let leftLaserButton = new five.Button(9);
 
   board.repl.inject({
     pot: potentiometer,
-    laserButton: laserButton
+    rightLaserButton: rightLaserButton,
+    leftLaserButton: leftLaserButton
   });
 
   potentiometer.on("data", function(){
@@ -59,8 +56,12 @@ const initBoard = () => {
     mainWindow.webContents.send('move', value);
   });
 
-  laserButton.on("down", function(){
-    mainWindow.webContents.send('shootLaser');
+  rightLaserButton.on("down", function(){
+    mainWindow.webContents.send('shootRightLaser');
+  });
+
+  leftLaserButton.on("down", function(){
+    mainWindow.webContents.send('shootLeftLaser');
   });
 }
 
