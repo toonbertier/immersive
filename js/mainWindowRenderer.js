@@ -201,10 +201,10 @@ const draw = () => {
   }
 
   if(spaceDebris.length > 0) {
-    spaceDebris.forEach(d => {
+    spaceDebris.forEach((d, index) => {
       if(d.checkOutOfBounds()) {
         scene.remove(d);
-        helpers.removeFromArray(spaceDebris, spaceDebris.findIndex(_d => _d.id == d.id));
+        helpers.removeFromArray(spaceDebris, index);
       } else {
         d.update();
       }
@@ -212,12 +212,13 @@ const draw = () => {
   }
 
   if(explosions.length > 0) {
-    explosions.forEach(e => {
+    explosions.forEach((e, index) => {
       if(e.handleScale()) {
         e.updateSphere();
       } else {
         scene.remove(e.el);
         scene.remove(e.particles);
+        helpers.removeFromArray(explosions, index);
       }
 
       e.updateParticles();
