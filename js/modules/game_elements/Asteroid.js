@@ -73,7 +73,7 @@ Asteroid.prototype.update = function() {
 
     case "big":
 
-      this.el.position.z += 1.2;
+      this.el.position.z += 0.9;
       this.el.rotation.x += 0.01;
       this.el.rotation.y += 0.005;
 
@@ -102,7 +102,7 @@ Asteroid.prototype.checkOutOfBounds = function() {
 };
 
 Asteroid.prototype.checkPassing = function() {
-  if(this.el.position.z >= 214 && this.el.position.z <= 218) {
+  if(this.el.position.z >= 202 && this.el.position.z <= 205) {
     window.bean.fire(this, 'passing');
   }
 };

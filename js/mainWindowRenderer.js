@@ -18,13 +18,13 @@ let Explosion = require('./js/modules/game_elements/Explosion');
 let Timeline = require('./js/modules/story/Timeline');
 window.bean = require('./js/libs/bean/bean.min.js');
 
-let loadedModels = [], stars = [], spaceDebris = [], explosions = [];
+let loadedModels = [], stars = [], explosions = [];
 let robot;
-let earth, asteroid, bigAsteroid, laser;
+let earth, asteroids = [], spaceDebris = [], bigAsteroid, laser;
 let scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
 
-let generateSpaceDebris = false;
+let generateSpaceDebris = false, generateSmallAsteroids = false, gameOver = false;
 
 // SYSTEM
 
@@ -34,7 +34,7 @@ const setup = () => {
 	Promise.all([setupScenery(), load3DModels(), setupAudio()]).then(() => {
 		renderer.render(scene, robot.camera);
 
-    // POTMETER REPLACEMENT
+    // ARDUINO REPLACEMENT
 
     document.addEventListener('keydown', function(e) {
       switch (e.keyCode) {
@@ -44,6 +44,14 @@ const setup = () => {
         case 39:
           robot.speed = -0.4;
           break;
+
+        case 87:
+          shootLaser('left');
+          break;
+
+        case 67:
+          shootLaser('right');
+          break;
       }
 
       document.addEventListener('keyup', function() {
@@ -52,14 +60,10 @@ const setup = () => {
 
     });
 
-		removeLoading();
+		hideDiv('.start-div');
 		handleStartButton();
 	});
 
-};
-
-const removeLoading = () => {
-	document.querySelector('.loading').parentNode.removeChild(document.querySelector('.loading'));
 };
 
 const handleStartButton = () => {
@@ -73,7 +77,7 @@ const handleStartButton = () => {
 		soundtrack.play();
 
     // debug mute
-		// soundtrack.muted = true;
+		soundtrack.muted = true;
 
 		draw();
 	});
@@ -87,7 +91,6 @@ const setupThreeJS = () => {
   robot = new Robot();
   robot.createCamera();
   window.bean.on(robot, 'removeLaser', laser => scene.remove(laser));
-  window.bean.on(robot, 'explodeObject', obj => explodeObject(obj));
 
 	scene = new THREE.Scene();
 
@@ -157,21 +160,31 @@ const addTimelineListeners = () => {
         break;
 
       case 'alarm_asteroid':
-        // showAlarm();
+        // showDiv('.alarm-div');
         break;
 
       case 'speed_up':
-        // hideAlarm();
+        // hideDiv('.alarm-div');
         generateSpaceDebris = false;
         earth.moveTo(0, -250, 360);
         break;
 
       case 'start_comets':
-        createSmallAsteroid();
+        generateSmallAsteroids = true;
+        createSmallAsteroids();
         break;
 
       case 'big_comet':
         createBigAsteroid();
+        break;
+
+      case 'big_comet_explosion':
+        explodeObject(bigAsteroid.el);
+        bigAsteroid = null;
+        break;
+
+      case 'back_to_earth':
+        earth.moveTo(0, -220, 300);
         break;
 
     }
@@ -186,46 +199,20 @@ const draw = () => {
 	timeline.handleTime(soundtrack.currentTime);
 
   handleScenery();
+  handleCollisions();
 
 	if(robot.isShaking) robot.shakeCamera();
 	robot.moveCamera();
 
-	if(asteroid && asteroid.el && asteroid.detectCollision(robot.camera.position)) robot.shakeCamera();
-
   if(robot.lasers.length > 0) {
-    let collisionObj = null;
-    if(asteroid && asteroid.el) {
-      collisionObj = asteroid.el;
-    }
-    robot.handleLasers(collisionObj);
+    robot.moveLasers();
   }
 
-  if(spaceDebris.length > 0) {
-    spaceDebris.forEach((d, index) => {
-      if(d.checkOutOfBounds()) {
-        scene.remove(d);
-        helpers.removeFromArray(spaceDebris, index);
-      } else {
-        d.update();
-      }
-    });
+  if(!gameOver) {
+    requestAnimationFrame(draw);
+  } else {
+    showDiv('.game-over-div');
   }
-
-  if(explosions.length > 0) {
-    explosions.forEach((e, index) => {
-      if(e.handleScale()) {
-        e.updateSphere();
-      } else {
-        scene.remove(e.el);
-        scene.remove(e.particles);
-        helpers.removeFromArray(explosions, index);
-      }
-
-      e.updateParticles();
-    });
-  }
-
-	requestAnimationFrame(draw);
 
 };
 
@@ -245,19 +232,52 @@ const createEarth = (x, y, z) => {
 
 };
 
-const createSmallAsteroid = () => {
+const createSmallAsteroids = () => {
 
-	return new Promise((resolve, reject) => {
+  function loop() {
 
-    asteroid = new Asteroid("small");
-    window.bean.on(asteroid, 'passing', () => player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, robot.camera.position.x)));
+    let asteroid = new Asteroid("small");
+    window.bean.on(asteroid, 'passing', () => {
+      player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, robot.camera.position.x))
+    });
 
-	  asteroid.renderSmall(robot.deg).then(_asteroid => {
-	  	scene.add(_asteroid.el);
-	  	return resolve(_asteroid);
-	  });
+    asteroid.renderSmall(robot.deg).then(_asteroid => {
+      scene.add(_asteroid.el);
+      asteroids.push(_asteroid);
+    });
 
-	});
+    if(generateSmallAsteroids) {
+      setTimeout(loop, Math.random() * 4000 + 2000);
+    }
+  }
+
+  loop();
+
+};
+
+const createSpaceDebris = () => {
+
+  function loop() {
+
+    let deg = robot.deg + Math.random() * 8 - 4;
+    let rad = helpers.toRadians(deg);
+
+    let x = 250 * Math.cos(rad);
+    let y = 250 * Math.sin(rad) - 250;
+
+    let model = loadedModels[Math.floor(Math.random() * loadedModels.length)].clone();
+    let debris = new SpaceDebris(x, y, -800, model);
+    debris.id = soundtrack.currentTime;
+    spaceDebris.push(debris);
+    scene.add(debris.el);
+
+    if(generateSpaceDebris) {
+      setTimeout(loop, Math.random() * 4000 + 2000);
+    }
+
+  }
+
+  loop();
 
 };
 
@@ -278,59 +298,68 @@ const getStar = (autoOpacityChange) => {
 
 };
 
-const createSpaceDebris = () => {
-
-  function loop() {
-
-    let deg = robot.deg + Math.random() * 8 - 4;
-    let rad = helpers.toRadians(deg);
-
-    let x = 250 * Math.cos(rad);
-    let y = 250 * Math.sin(rad) - 250;
-
-    let model = loadedModels[Math.floor(Math.random() * loadedModels.length)].clone();
-    let debris = new SpaceDebris(x, y, -100, model);
-    debris.id = soundtrack.currentTime;
-    spaceDebris.push(debris);
-    scene.add(debris.el);
-
-    if(generateSpaceDebris) {
-      setTimeout(loop, Math.random() * 4000 + 2000);
-    } else {
-      spaceDebris = [];
-    }
-
-  }
-
-  loop();
-
-};
-
 // HANDLING SCENERY
 
 const handleScenery = () => {
   if(earth) earth.update();
-  handleAsteroids();
   handleStars();
+
+  handleSpaceObjectArrays(spaceDebris);
+  handleSpaceObjectArrays(asteroids);
+
+  if(bigAsteroid && bigAsteroid.el) {
+    bigAsteroid.update();
+  }
+
+  if(explosions.length > 0) {
+    explosions.forEach((e, index) => {
+      if(e.handleScale()) {
+        e.updateSphere();
+      } else {
+        scene.remove(e.el);
+        scene.remove(e.particles);
+        helpers.removeFromArray(explosions, index);
+      }
+
+      e.updateParticles();
+    });
+  }
 };
 
-const handleAsteroids = () => {
-
-  if(earth.el) {
-
-    if(asteroid && asteroid.el) {
-      if(asteroid.checkOutOfBounds()) {
-        scene.remove(asteroid.el);
-        createSmallAsteroid();
+const handleSpaceObjectArrays = (arr) => {
+  if(arr.length > 0) {
+    arr.forEach((e, index) => {
+      if(e.checkOutOfBounds()) {
+        scene.remove(e);
+        helpers.removeFromArray(arr, index);
       } else {
-        asteroid.update();
+        e.update();
       }
-    }
+    });
+  }
+};
 
-    if(bigAsteroid && bigAsteroid.el) {
-      bigAsteroid.update();
-    }
+const handleCollisions = () => {
 
+  if(robot.lasers.length > 0) {
+    if(asteroids.length > 0) {
+      asteroids.forEach((a, index) => {
+        if(robot.detectLaserColliction(a.el)) {
+          helpers.removeFromArray(asteroids, index);
+          explodeObject(a.el);
+          a = null;
+        }
+      });
+    }
+  }
+
+  if(spaceDebris.length > 0) {
+    spaceDebris.forEach((s, index) => {
+      if(s.detectCollision(robot.camera)) {
+        // gameOver = true;
+        console.log('GAME OVER');
+      }
+    });
   }
 
 };
@@ -361,15 +390,15 @@ const explodeObject = (obj) => {
 
 }
 
-const showAlarm = () => {
-  let alarmDiv = document.querySelector('.alarm-div');
-  alarmDiv.classList.remove('hide');
+const showDiv = (cls) => {
+  let div = document.querySelector(cls);
+  div.classList.remove('hide');
+}
 
-};
-
-const hideAlarm = () => {
-  let alarmDiv = document.querySelector('.alarm-div');
-  alarmDiv.classList.add('hide');
+const hideDiv = (cls) => {
+  let div = document.querySelector(cls);
+  console.log(div);
+  div.classList.add('hide');
 };
 
 const shootLaser = (cannon) => {
@@ -377,17 +406,19 @@ const shootLaser = (cannon) => {
   scene.add(robot.createLaser(cannon));
 }
 
+/* ARDUINO */
+
 // ipc.on('move', function(val) {
 // 	robot.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
 // });
 
-ipc.on('shootLeftLaser', function() {
-  shootLaser('left');
-});
+// ipc.on('shootLeftLaser', function() {
+//   shootLaser('left');
+// });
 
-ipc.on('shootRightLaser', function() {
-  shootLaser('right');
-})
+// ipc.on('shootRightLaser', function() {
+//   shootLaser('right');
+// })
 
 setup();
 

@@ -15,12 +15,19 @@ function SpaceDebris(x, y, z, model) {
 
   this.el = model;
   this.el.position.set(x, y, z);
+  this.el.traverse(child => {
+    if (child instanceof THREE.Mesh) {
+      child.geometry.computeBoundingBox();
+      this.boundingBox = child.geometry.boundingBox;
+      console.log(this.boundingBox);
+    }
+  });
 
 }
 
 SpaceDebris.prototype.update = function() {
 
-    this.el.position.z += 2;
+    this.el.position.z += 5;
     this.el.rotation.x += 0.001;
     this.el.rotation.y += 0.005;
 
@@ -35,6 +42,19 @@ SpaceDebris.prototype.checkOutOfBounds = function() {
     return true;
   }
   return false;
+};
+
+SpaceDebris.prototype.detectCollision = function(camera) {
+
+  if(this.el.position.z > camera.position.z) {
+    if(this.el.position.x - this.boundingBox.min.x < camera.position.x + 80
+       && this.el.position.x + this.boundingBox.max.x > camera.position.x - 80) {
+      return true;
+    }
+  }
+
+  return false;
+
 };
 
 module.exports = SpaceDebris;

@@ -21,8 +21,6 @@
 
 ### Algemeen
 
-* Explosies
-
 ## Andere
 
 * Alles samensteken :D

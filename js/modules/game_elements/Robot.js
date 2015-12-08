@@ -90,13 +90,6 @@ Robot.prototype.moveCamera = function() {
 
 };
 
-Robot.prototype.handleLasers = function(collisionObj) {
-  if(collisionObj != null) {
-    this.detectLaserColliction(collisionObj);
-  }
-  this.moveLasers();
-}
-
 Robot.prototype.moveLasers = function() {
 
   this.lasers.forEach(laser => {
@@ -116,13 +109,14 @@ Robot.prototype.moveLasers = function() {
 Robot.prototype.detectLaserColliction = function(collisionObj) {
 
   let radius = null;
+  let collided = false;
 
   if(collisionObj.type == "Mesh") {
     radius = collisionObj.geometry.boundingSphere.radius;
   }
 
-  this.lasers.forEach(laser => {
-
+  for(let i = 0; i < this.lasers.length; i++) {
+    let laser = this.lasers[i];
     if(laser.position.z < collisionObj.position.z + radius
        && laser.position.z > collisionObj.position.z - radius
        && laser.position.x < collisionObj.position.x + radius
@@ -130,10 +124,15 @@ Robot.prototype.detectLaserColliction = function(collisionObj) {
        && laser.position.y < collisionObj.position.y + radius
        && laser.position.y > collisionObj.position.y - radius
     ) {
-      window.bean.fire(this, 'explodeObject', [collisionObj]);
+      collided = true;
+      break;
     }
+  }
 
-  });
+  if(collided) {
+    return true;
+  }
+  return false;
 
 };
 

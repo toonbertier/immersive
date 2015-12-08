@@ -142,6 +142,7 @@ Timeline.prototype.startScene = function(scene_id) {
 
 		case 9:
 			console.log(this.time, 'scene 9: ontploffing komeet');
+      window.bean.fire(this, 'timeline_event', 'big_comet_explosion');
 			//code voor scene
 		break;
 
@@ -152,6 +153,7 @@ Timeline.prototype.startScene = function(scene_id) {
 
 		case 11:
 			console.log(this.time, 'scene 11: aarde zichtbaar en komt dichterbij');
+      window.bean.fire(this, 'timeline_event', 'back_to_earth');
 			//code voor scene
 		break;
 
