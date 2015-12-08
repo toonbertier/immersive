@@ -13,11 +13,12 @@ let Asteroid = require('./js/modules/game_elements/Asteroid');
 let Star = require('./js/modules/game_elements/Star');
 let Earth = require('./js/modules/game_elements/Earth');
 let SpaceDebris = require('./js/modules/game_elements/SpaceDebris');
+let Explosion = require('./js/modules/game_elements/Explosion');
 
 let Timeline = require('./js/modules/story/Timeline');
 window.bean = require('./js/libs/bean/bean.min.js');
 
-let loadedModels = [], stars = [], spaceDebris = [];
+let loadedModels = [], stars = [], spaceDebris = [], explosions = [];
 let robot;
 let earth, asteroid, bigAsteroid, laser;
 let scene, renderer, effect;
@@ -86,7 +87,7 @@ const setupThreeJS = () => {
   robot = new Robot();
   robot.createCamera();
   window.bean.on(robot, 'removeLaser', laser => scene.remove(laser));
-  window.bean.on(robot, 'explodeObject', obj => scene.remove(obj));
+  window.bean.on(robot, 'explodeObject', obj => explodeObject(obj));
 
 	scene = new THREE.Scene();
 
@@ -207,6 +208,18 @@ const draw = () => {
       } else {
         d.update();
       }
+    });
+  }
+
+  if(explosions.length > 0) {
+    explosions.forEach(e => {
+      if(e.handleScale()) {
+        e.updateSphere();
+      } else {
+        scene.remove(e.el);
+      }
+
+      e.updateParticles();
     });
   }
 
@@ -334,6 +347,17 @@ const handleStars = () => {
 	});
 
 };
+
+const explodeObject = (obj) => {
+
+  let expl = new Explosion();
+  explosions.push(expl);
+  scene.add(expl.renderSphere(obj.position.x, obj.position.y, obj.position.z));
+  scene.add(expl.renderParticles(obj.position.x, obj.position.y, obj.position.z));
+
+  scene.remove(obj);
+
+}
 
 const showAlarm = () => {
   let alarmDiv = document.querySelector('.alarm-div');
