@@ -217,6 +217,7 @@ const draw = () => {
         e.updateSphere();
       } else {
         scene.remove(e.el);
+        scene.remove(e.particles);
       }
 
       e.updateParticles();
