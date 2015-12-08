@@ -2,21 +2,32 @@
 
 let helpers = require('../helpers/helpers');
 
-function Asteroid() {
+function Asteroid(kind) {
 
-  let deg = Math.random() * 40 + 70;
-  let rad = helpers.toRadians(deg);
+  this.kind = kind;
 
+  this.radius = Math.random() * (8 - 1) + 1;
+  this.x = 0;
+  this.y = 0;
 	this.z = -400;
-  this.x = 250 * Math.cos(rad);
-  this.y = 250 * Math.sin(rad) - 250;
-	// this.x = Math.random() * 80 - 40;
-	// this.y = 0;
-	this.radius = Math.random() * (8 - 1) + 1;
-
 }
 
-Asteroid.prototype.render = function() {
+Asteroid.prototype.randomPointAroundCurrentDeg = function(currentDeg) {
+  let deg = currentDeg + Math.random() * 5 - 2.5;
+  let rad = helpers.toRadians(deg);
+
+  this.x = 250 * Math.cos(rad);
+  this.y = 250 * Math.sin(rad) - 250;
+}
+
+Asteroid.prototype.renderBig = function(obj, currentDeg) {
+  this.el = obj;
+  this.randomPointAroundCurrentDeg(currentDeg);
+  this.el.position.set(this.x, this.y, this.z);
+  return this.el;
+}
+
+Asteroid.prototype.renderSmall = function(currentDeg) {
 
 	return new Promise((resolve, reject) => {
 
@@ -29,9 +40,11 @@ Asteroid.prototype.render = function() {
 			asteroidMaterial.bumpScale = 10;
 
 			this.el = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
-			this.el.position.z = this.z;
-			this.el.position.x = this.x;
-			this.el.position.y = this.y;
+
+			this.randomPointAroundCurrentDeg(currentDeg);
+
+      this.el.position.set(this.x, this.y, this.z);
+
       this.el.material.transparent = true;
       this.el.material.opacity = 0;
 
@@ -45,12 +58,27 @@ Asteroid.prototype.render = function() {
 
 Asteroid.prototype.update = function() {
 
-	this.el.position.z += 6;
-	this.el.rotation.x += 0.01;
-	this.el.rotation.y += 0.005;
-  if(this.el.material.opacity < 1) this.el.material.opacity += 0.1;
+  switch(this.kind) {
 
-  this.checkPassing();
+    case "small":
+
+      this.el.position.z += 6;
+      this.el.rotation.x += 0.01;
+      this.el.rotation.y += 0.005;
+      if(this.el.material.opacity < 1) this.el.material.opacity += 0.1;
+
+      this.checkPassing();
+
+      break;
+
+    case "big":
+
+      this.el.position.z += 1.2;
+      this.el.rotation.x += 0.01;
+      this.el.rotation.y += 0.005;
+
+      break;
+  }
 
 };
 
@@ -74,9 +102,8 @@ Asteroid.prototype.checkOutOfBounds = function() {
 };
 
 Asteroid.prototype.checkPassing = function() {
-  if(this.el.position.z >= 214 && this.el.position.z <= 216) {
+  if(this.el.position.z >= 214 && this.el.position.z <= 218) {
     window.bean.fire(this, 'passing');
-    player.play(soundFX[1]);
   }
 };
 

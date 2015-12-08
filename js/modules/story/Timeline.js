@@ -136,6 +136,7 @@ Timeline.prototype.startScene = function(scene_id) {
 
 		case 8:
 			console.log(this.time, 'scene 8: grote moederkomeet komt dichterbij');
+      window.bean.fire(this, 'timeline_event', 'big_comet');
 			//code voor scene
 		break;
 

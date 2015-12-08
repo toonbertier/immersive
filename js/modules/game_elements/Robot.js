@@ -85,9 +85,6 @@ Robot.prototype.moveCamera = function() {
   this.y = 250 * Math.sin(rad) - 250;
 
   this.camera.rotation.z += (((rad - Math.PI / 2) + this.speed * 0.4) - this.camera.rotation.z) * 0.2;
-
-  //this.camera.rotation.z += ((-rad - this.speed * 0.4) - this.camera.rotation.z) * 0.2;
-
   this.camera.position.x += (this.x - this.camera.position.x) * 0.2;
   this.camera.position.y += (this.y - this.camera.position.y) * 0.2;
 
@@ -133,7 +130,6 @@ Robot.prototype.detectLaserColliction = function(collisionObj) {
        && laser.position.y < collisionObj.position.y + radius
        && laser.position.y > collisionObj.position.y - radius
     ) {
-      console.log('EXPLOOOOOODE');
       window.bean.fire(this, 'explodeObject', [collisionObj]);
     }
 

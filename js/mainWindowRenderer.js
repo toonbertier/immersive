@@ -4,30 +4,36 @@
 
 let ipc = require('ipc');
 let helpers = require('./js/modules/helpers/helpers');
-let Robot = require('./js/modules/studio/Robot');
+
 let Player = require('./js/modules/sound/Player');
+let ModelLoader = require('./js/modules/loaders/ModelLoader.js');
+
+let Robot = require('./js/modules/game_elements/Robot');
 let Asteroid = require('./js/modules/game_elements/Asteroid');
 let Star = require('./js/modules/game_elements/Star');
 let Earth = require('./js/modules/game_elements/Earth');
 let SpaceDebris = require('./js/modules/game_elements/SpaceDebris');
+
 let Timeline = require('./js/modules/story/Timeline');
 window.bean = require('./js/libs/bean/bean.min.js');
 
-let stars = [], spaceDebris = [];
+let loadedModels = [], stars = [], spaceDebris = [];
 let robot;
-let earth, asteroid, laser;
+let earth, asteroid, bigAsteroid, laser;
 let scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
 
-let updateSpaceDebris = false;
+let generateSpaceDebris = false;
 
 // SYSTEM
 
 const setup = () => {
 
 	setupThreeJS();
-	Promise.all([setupScenery(), setupSpaceDebris(), setupAudio()]).then(() => {
+	Promise.all([setupScenery(), load3DModels(), setupAudio()]).then(() => {
 		renderer.render(scene, robot.camera);
+
+    // POTMETER REPLACEMENT
 
     document.addEventListener('keydown', function(e) {
       switch (e.keyCode) {
@@ -66,7 +72,7 @@ const handleStartButton = () => {
 		soundtrack.play();
 
     // debug mute
-		soundtrack.muted = true;
+		// soundtrack.muted = true;
 
 		draw();
 	});
@@ -107,9 +113,12 @@ const setupScenery = () => {
 	});
 };
 
-const setupSpaceDebris = () => {
+const load3DModels = () => {
   return new Promise((resolve, reject) => {
-    SpaceDebris.loadAll().then(() => resolve(true));
+    ModelLoader.loadAll().then(models => {
+      loadedModels = models;
+      return resolve(true);
+    });
   });
 }
 
@@ -142,25 +151,27 @@ const addTimelineListeners = () => {
         break;
 
       case 'space_debris':
-        updateSpaceDebris = true;
-        generateSpaceDebris();
+        generateSpaceDebris = true;
+        createSpaceDebris();
         break;
 
       case 'alarm_asteroid':
-        showAlarm();
+        // showAlarm();
         break;
 
       case 'speed_up':
-        updateSpaceDebris = false;
-        hideAlarm();
-        earth.rotationSpeed = 0.0009;
+        // hideAlarm();
+        generateSpaceDebris = false;
         earth.moveTo(0, -250, 360);
         break;
 
       case 'start_comets':
-        createAsteroid();
+        createSmallAsteroid();
         break;
 
+      case 'big_comet':
+        createBigAsteroid();
+        break;
 
     }
 
@@ -188,13 +199,13 @@ const draw = () => {
     robot.handleLasers(collisionObj);
   }
 
-  if(updateSpaceDebris) {
-    spaceDebris.forEach(s => {
-      if(s.checkOutOfBounds()) {
-        scene.remove(s);
-        helpers.removeFromArray(spaceDebris, spaceDebris.findIndex(_s => _s.el.uuid == s.el.uuid));
+  if(spaceDebris.length > 0) {
+    spaceDebris.forEach(d => {
+      if(d.checkOutOfBounds()) {
+        scene.remove(d);
+        helpers.removeFromArray(spaceDebris, spaceDebris.findIndex(_d => _d.id == d.id));
       } else {
-        s.update();
+        d.update();
       }
     });
   }
@@ -219,19 +230,26 @@ const createEarth = (x, y, z) => {
 
 };
 
-const createAsteroid = () => {
+const createSmallAsteroid = () => {
 
 	return new Promise((resolve, reject) => {
 
-    asteroid = new Asteroid();
+    asteroid = new Asteroid("small");
     window.bean.on(asteroid, 'passing', () => player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, robot.camera.position.x)));
 
-	  asteroid.render().then(_asteroid => {
+	  asteroid.renderSmall(robot.deg).then(_asteroid => {
 	  	scene.add(_asteroid.el);
 	  	return resolve(_asteroid);
 	  });
 
 	});
+
+};
+
+const createBigAsteroid = () => {
+
+  bigAsteroid = new Asteroid("big");
+  scene.add(bigAsteroid.renderBig(loadedModels[0], robot.deg));
 
 };
 
@@ -245,13 +263,31 @@ const getStar = (autoOpacityChange) => {
 
 };
 
-const generateSpaceDebris = () => {
+const createSpaceDebris = () => {
 
-  spaceDebris.push(new SpaceDebris(0, 0, -100));
+  function loop() {
 
-  spaceDebris.forEach(s => {
-    scene.add(s.el);
-  });
+    let deg = robot.deg + Math.random() * 8 - 4;
+    let rad = helpers.toRadians(deg);
+
+    let x = 250 * Math.cos(rad);
+    let y = 250 * Math.sin(rad) - 250;
+
+    let model = loadedModels[Math.floor(Math.random() * loadedModels.length)].clone();
+    let debris = new SpaceDebris(x, y, -100, model);
+    debris.id = soundtrack.currentTime;
+    spaceDebris.push(debris);
+    scene.add(debris.el);
+
+    if(generateSpaceDebris) {
+      setTimeout(loop, Math.random() * 4000 + 2000);
+    } else {
+      spaceDebris = [];
+    }
+
+  }
+
+  loop();
 
 };
 
@@ -259,20 +295,28 @@ const generateSpaceDebris = () => {
 
 const handleScenery = () => {
   if(earth) earth.update();
-  handleAsteroid();
+  handleAsteroids();
   handleStars();
 };
 
-const handleAsteroid = () => {
+const handleAsteroids = () => {
 
-	if(asteroid && asteroid.el && earth.el) {
-		if(asteroid.checkOutOfBounds()) {
-      scene.remove(asteroid.el);
-			createAsteroid();
-		} else {
-			asteroid.update();
-		}
-	}
+  if(earth.el) {
+
+    if(asteroid && asteroid.el) {
+      if(asteroid.checkOutOfBounds()) {
+        scene.remove(asteroid.el);
+        createSmallAsteroid();
+      } else {
+        asteroid.update();
+      }
+    }
+
+    if(bigAsteroid && bigAsteroid.el) {
+      bigAsteroid.update();
+    }
+
+  }
 
 };
 
@@ -292,8 +336,6 @@ const handleStars = () => {
 };
 
 const showAlarm = () => {
-  console.log('ALARM ALARM');
-
   let alarmDiv = document.querySelector('.alarm-div');
   alarmDiv.classList.remove('hide');
 
