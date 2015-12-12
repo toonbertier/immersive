@@ -247,7 +247,7 @@ const createSmallAsteroids = () => {
     });
 
     if(generateSmallAsteroids) {
-      setTimeout(loop, Math.random() * 4000 + 2000);
+      setTimeout(loop, Math.random() * 1000 + 500);
     }
   }
 
