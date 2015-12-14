@@ -75,9 +75,11 @@ const handleStartButton = () => {
 		e.preventDefault();
 		buttonDiv.parentNode.removeChild(buttonDiv);
 		soundtrack.play();
+    ipc.send('toggle-12v-fan');
+
 
     // debug mute
-		soundtrack.muted = true;
+		// soundtrack.muted = true;
 
 		draw();
 	});
@@ -150,6 +152,7 @@ const addTimelineListeners = () => {
     switch(e) {
 
       case 'arrived_in_space':
+        ipc.send('toggle-5v-fan');
         earth.moveTo(0, -220, 300);
         stars.forEach(s => s.transitioning = true);
         break;
@@ -167,11 +170,14 @@ const addTimelineListeners = () => {
         // hideDiv('.alarm-div');
         generateSpaceDebris = false;
         earth.moveTo(0, -250, 360);
+        ipc.send('flash-both-lights');
+        ipc.send('toggle-12v-fan');
         break;
 
       case 'start_comets':
         generateSmallAsteroids = true;
         createSmallAsteroids();
+        ipc.send('toggle-5v-fan');
         break;
 
       case 'big_comet':
@@ -386,6 +392,8 @@ const explodeObject = (obj) => {
   scene.add(expl.renderSphere(obj.position.x, obj.position.y, obj.position.z));
   scene.add(expl.renderParticles(obj.position.x, obj.position.y, obj.position.z));
 
+  ipc.send('flash-both-lights');
+
   scene.remove(obj);
 
 }
@@ -408,17 +416,17 @@ const shootLaser = (cannon) => {
 
 /* ARDUINO */
 
-// ipc.on('move', function(val) {
-// 	robot.speed = helpers.mapRange(val, 0, 1023, 0.7, -0.7);
-// });
+ipc.on('move', function(val) {
+	robot.speed = helpers.mapRange(val, 170, 650, 0.7, -0.7);
+});
 
-// ipc.on('shootLeftLaser', function() {
-//   shootLaser('left');
-// });
+ipc.on('shootLeftLaser', function() {
+  shootLaser('left');
+});
 
-// ipc.on('shootRightLaser', function() {
-//   shootLaser('right');
-// })
+ipc.on('shootRightLaser', function() {
+  shootLaser('right');
+})
 
 setup();
 
