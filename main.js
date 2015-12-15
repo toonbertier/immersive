@@ -51,7 +51,7 @@ const initBoard = () => {
   strip = new pixel.Strip({
     board: board,
     controller: "FIRMATA",
-    strips: [ {pin: 2, length: 60}, {pin: 9, length: 60},]
+    strips: [ {pin: 2, length: 60}, {pin: 3, length: 60},]
   });
 
   strip.on("ready", function() {
@@ -62,10 +62,10 @@ const initBoard = () => {
 
   /* RELAY Config */
 
-  relayFan5v = new five.Relay(10);
-  relayFan12v = new five.Relay(6);
-  relayLeftLight = new five.Relay(12);
-  relayRightLight = new five.Relay(11);
+  relayFan5v = new five.Relay(6);
+  relayFan12v = new five.Relay(7);
+  relayLeftLight = new five.Relay(5);
+  relayRightLight = new five.Relay(4);
 
   ipc.on('toggle-12v-fan', function(event, arg) {
     if(!relayFan5v.isOn) relayFan5v.close();
@@ -110,13 +110,15 @@ const initBoard = () => {
      pin: "A0",
      freq: 250
   });
-  let rightLaserButton = new five.Button(7);
-  let leftLaserButton = new five.Button(8);
+  let rightLaserButton = new five.Button(8);
+  let leftLaserButton = new five.Button(9);
+  let startButton = new five.Button(10);
 
   board.repl.inject({
     pot: potentiometer,
     rightLaserButton: rightLaserButton,
     leftLaserButton: leftLaserButton,
+    startButton: startButton,
     relayFan5v: relayFan5v,
     relayFan12v: relayFan12v,
     relayLeftLight: relayLeftLight,
