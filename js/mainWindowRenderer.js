@@ -23,6 +23,7 @@ let robot;
 let earth, asteroids = [], spaceDebris = [], bigAsteroid, laser;
 let scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
+let potCenter = 500;
 
 let generateSpaceDebris = false, generateSmallAsteroids = false, gameOver = false;
 
@@ -76,6 +77,10 @@ const handleStartButton = () => {
 		buttonDiv.parentNode.removeChild(buttonDiv);
 		soundtrack.play();
     ipc.send('toggle-12v-fan');
+    potCenter = robot.raw;
+    console.log('potCenter', robot.raw);
+    console.log('potMin', robot.raw-225);
+    console.log('potMax', robot.raw+225);
 
 
     // debug mute
@@ -417,7 +422,10 @@ const shootLaser = (cannon) => {
 /* ARDUINO */
 
 ipc.on('move', function(val) {
-	robot.speed = helpers.mapRange(val, 170, 650, 0.7, -0.7);
+  if(!isNaN(val)) {
+    robot.raw = val;
+    robot.speed = helpers.mapRange(val, potCenter-225, potCenter+225, 0.7, -0.7);
+  }
 });
 
 ipc.on('shootLeftLaser', function() {

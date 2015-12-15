@@ -281,4 +281,3 @@ const neopixels_prepare_lasers = () => {
   }, 1000/fps);
 
 };
-
