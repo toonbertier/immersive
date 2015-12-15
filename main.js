@@ -8,10 +8,14 @@ let BrowserWindow = require('browser-window');
 // Johnny-Five
 let five = require('johnny-five');
 let pixel = require('node-pixel');
-let board = five.Board();
+
+// let board = five.Board();
+var boards;
 let strip = null;
 let stripReady = false;
 let relayFan5v, relayFan12v, relayLeftLight, relayRightLight;
+let fps = 10;
+var flashSide = 'none', leftLedsTimer, rightLedsTimer;
 
 let mainWindow = null;
 
@@ -28,36 +32,51 @@ app.on('ready', function(){
   mainWindow.openDevTools();
   mainWindow.loadUrl('file://' + __dirname + '/index.html');
 
-  board.on('ready', initBoard);
-
   mainWindow.on('closed', function(){
     mainWindow = null;
   });
 
+  boards = new five.Boards([
+    {
+      id: 'main',
+      port: '/dev/cu.usbmodem1411'
+    },
+    {
+      id: 'leds',
+      port: '/dev/cu.usbmodem1421'
+    }
+  ]);
+
+  boards.on("ready", initBoards);
+
 });
 
 app.on('quit', function() {
-  ledsOff();
+  blankLeds();
   relayFan5v.close();
   relayFan12v.close();
   relayLeftLight.close();
   relayRightLight.close();
 });
 
-const initBoard = () => {
+const initBoards = () => {
+
+  console.log('boards ready');
 
   /* LED Config */
 
   strip = new pixel.Strip({
-    board: board,
+    board: boards.byId('leds'),
     controller: "FIRMATA",
     strips: [ {pin: 2, length: 60}, {pin: 3, length: 60},]
   });
 
   strip.on("ready", function() {
+    console.log("strips are ready");
     stripReady = true;
     strip.color('#000');
     strip.show();
+    neopixels_prepare_lasers();
   });
 
   /* RELAY Config */
@@ -114,7 +133,8 @@ const initBoard = () => {
   let leftLaserButton = new five.Button(9);
   let startButton = new five.Button(10);
 
-  board.repl.inject({
+
+  boards.repl.inject({
     pot: potentiometer,
     rightLaserButton: rightLaserButton,
     leftLaserButton: leftLaserButton,
@@ -137,12 +157,26 @@ const initBoard = () => {
 
   rightLaserButton.on("down", function(){
     mainWindow.webContents.send('shootRightLaser');
-    neopixels_flash(100, '#00ff00', 0);
+    // neopixels_flash(250, '#00ff00', 'left');
+    flashSide = 'right';
+    clearTimeout(rightLedsTimer);
+    rightLedsTimer = setTimeout(() => {
+      flashSide = 'none';
+      clearTimeout(rightLedsTimer);
+      console.log('reset flashside to 0');
+    }, 200);
   });
 
   leftLaserButton.on("down", function(){
     mainWindow.webContents.send('shootLeftLaser');
-    neopixels_flash(100, '#00ff00', 60);
+    // neopixels_flash(250, '#00ff00', 'right');
+    flashSide = 'left';
+    clearTimeout(leftLedsTimer)
+    leftLedsTimer = setTimeout(() => {
+      flashSide = 'none';
+      clearTimeout(leftLedsTimer);
+      console.log('reset flashside to 0');
+    }, 200);
   });
 };
 
@@ -198,35 +232,29 @@ const neopixels_strobe = (time, color, span) => {
 
 };
 
-const neopixels_flash = (time, color, offset) => {
+const neopixels_flash = (time, color, side) => {
 
   if(stripReady) {
 
-    if(offset < 60) {
-      for(let i = 0; i < strip.stripLength(); i++) {
-        if(i < 60) {
-          strip.pixel(i).color(color);
-        }
+    if(side === 'left') {
+      for(let i = 0; i < (strip.stripLength()/2); i++) {
+        strip.pixel(i).color(color);
+      }
+    } else {
+      for(let i = 60; i < strip.stripLength(); i++) {
+        strip.pixel(i).color(color);
       }
     }
 
-    if(offset >= 60) {
-      for(let i = 0; i < strip.stripLength(); i++) {
-        if(i >= 60) {
-          strip.pixel(i).color(color);
-        }
-      }
-    }
     strip.show();
 
     let timeOut = setTimeout(() => {
-      console.log('blank');
       strip.color('#000');
       strip.show();
       clearTimeout(timeOut);
-    }, 500);
+    }, time);
 
-  // stopAnimation()
+  // stopAnimation();
 
   }
 
@@ -235,15 +263,39 @@ const neopixels_flash = (time, color, offset) => {
 const stopAnimation = (animation, time) => {
   setTimeout(() => {
     clearInterval(animation);
-    ledsOff();
+    blankLeds();
     setTimeout(() => {
-      ledsOff();
+      blankLeds();
     }, 100);
   }, time);
 };
 
-const ledsOff = () => {
+const blankLeds = () => {
   strip.color('#000');
   strip.show();
+};
+
+const neopixels_prepare_lasers = () => {
+
+  var show = setInterval(() => {
+
+    if(flashSide === 'right') {
+      for(let i = 59; i > 0; i-=1) {
+        strip.pixel(i).color('green');
+        strip.show();
+      }
+    } else if(flashSide === 'left') {
+      for(let i = 119; i > 60; i-=1) {
+        strip.pixel(i).color('green');
+        strip.show();
+      }
+    } else {
+      blankLeds();
+    }
+
+
+
+  }, 1000/fps);
+
 };
 
