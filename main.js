@@ -9,8 +9,7 @@ let BrowserWindow = require('browser-window');
 let five = require('johnny-five');
 let pixel = require('node-pixel');
 
-// let board = five.Board();
-var boards;
+let board = five.Board();
 let strip = null;
 let stripReady = false;
 let relayFan5v, relayFan12v, relayLeftLight, relayRightLight;
@@ -36,18 +35,7 @@ app.on('ready', function(){
     mainWindow = null;
   });
 
-  boards = new five.Boards([
-    {
-      id: 'main',
-      port: '/dev/cu.usbmodem1411'
-    },
-    {
-      id: 'leds',
-      port: '/dev/cu.usbmodem1421'
-    }
-  ]);
-
-  boards.on("ready", initBoards);
+  board.on('ready', initBoard);
 
 });
 
@@ -59,20 +47,18 @@ app.on('quit', function() {
   relayRightLight.close();
 });
 
-const initBoards = () => {
-
-  console.log('boards ready');
+const initBoard = () => {
 
   /* LED Config */
 
   strip = new pixel.Strip({
-    board: boards.byId('leds'),
+    // board: boards.byId('leds'),
+    board: board,
     controller: "FIRMATA",
     strips: [ {pin: 2, length: 60}, {pin: 3, length: 60},]
   });
 
   strip.on("ready", function() {
-    console.log("strips are ready");
     stripReady = true;
     strip.color('#000');
     strip.show();
@@ -134,7 +120,7 @@ const initBoards = () => {
   let startButton = new five.Button(10);
 
 
-  boards.repl.inject({
+  board.repl.inject({
     pot: potentiometer,
     rightLaserButton: rightLaserButton,
     leftLaserButton: leftLaserButton,
@@ -152,30 +138,27 @@ const initBoards = () => {
 
   potentiometer.on("data", function(){
     let value = this.raw;
+    console.log(this.raw);
     mainWindow.webContents.send('move', value);
   });
 
   rightLaserButton.on("down", function(){
     mainWindow.webContents.send('shootRightLaser');
-    // neopixels_flash(250, '#00ff00', 'left');
     flashSide = 'right';
     clearTimeout(rightLedsTimer);
     rightLedsTimer = setTimeout(() => {
       flashSide = 'none';
       clearTimeout(rightLedsTimer);
-      console.log('reset flashside to 0');
     }, 200);
   });
 
   leftLaserButton.on("down", function(){
     mainWindow.webContents.send('shootLeftLaser');
-    // neopixels_flash(250, '#00ff00', 'right');
     flashSide = 'left';
     clearTimeout(leftLedsTimer)
     leftLedsTimer = setTimeout(() => {
       flashSide = 'none';
       clearTimeout(leftLedsTimer);
-      console.log('reset flashside to 0');
     }, 200);
   });
 };
