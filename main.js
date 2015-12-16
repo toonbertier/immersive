@@ -9,7 +9,8 @@ let BrowserWindow = require('browser-window');
 let five = require('johnny-five');
 let pixel = require('node-pixel');
 
-let board = five.Board();
+// let board = five.Board();
+let boards;
 let strip = null;
 let stripReady = false;
 let relayFan5v, relayFan12v, relayLeftLight, relayRightLight;
@@ -35,7 +36,20 @@ app.on('ready', function(){
     mainWindow = null;
   });
 
-  board.on('ready', initBoard);
+  boards = new five.Boards([
+    {
+      id: 'main',
+      port: '/dev/cu.usbmodem1411'
+    },
+    {
+      id: 'leds',
+      port: '/dev/cu.usbmodem1421'
+    }
+  ]);
+
+  boards.on("ready", initBoards);
+
+  // board.on('ready', initBoard);
 
 });
 
@@ -47,13 +61,13 @@ app.on('quit', function() {
   relayRightLight.close();
 });
 
-const initBoard = () => {
+const initBoards = () => {
 
   /* LED Config */
 
   strip = new pixel.Strip({
-    // board: boards.byId('leds'),
-    board: board,
+    board: boards.byId('leds'),
+    // board: board,
     controller: "FIRMATA",
     strips: [ {pin: 2, length: 60}, {pin: 3, length: 60},]
   });
@@ -146,6 +160,11 @@ const initBoard = () => {
 
   });
 
+  ipc.on('fill', (event, color) => {
+    strip.color(color);
+    strip.show();
+  });
+
   ipc.on('roll', (event, duration) => {
     neopixels_roll(duration);
   });
@@ -161,7 +180,7 @@ const initBoard = () => {
   let startButton = new five.Button(10);
 
 
-  board.repl.inject({
+  boards.repl.inject({
     pot: potentiometer,
     rightLaserButton: rightLaserButton,
     leftLaserButton: leftLaserButton,

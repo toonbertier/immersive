@@ -165,7 +165,7 @@ Timeline.prototype.startScene = function(scene_id) {
 
 		case 10:
 			console.log(this.time, 'scene 10: boodschap aarde gered');
-      ipc.send('roll', 16000);
+      ipc.send('fill', 'orange');
 			//code voor scene
 		break;
 

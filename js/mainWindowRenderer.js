@@ -24,7 +24,7 @@ let earth, asteroids = [], spaceDebris = [], bigAsteroid, laser;
 let scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
 let potCenter = 500;
-let ready;
+let ready = false, playing = false;
 
 let generateSpaceDebris = false, generateSmallAsteroids = false, gameOver = false, enabledLasers = false;
 
@@ -455,7 +455,10 @@ ipc.on('shootRightLaser', () => {
 });
 
 ipc.on('startStory', () => {
-  if(ready) startStory();
+  if(ready && !playing) {
+    playing = true;
+    startStory();
+  }
 });
 
 setup();
