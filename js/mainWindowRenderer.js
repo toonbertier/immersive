@@ -24,8 +24,9 @@ let earth, asteroids = [], spaceDebris = [], bigAsteroid, laser;
 let scene, renderer, effect;
 let audioCtx, player, soundFX, soundtrack, timeline;
 let potCenter = 500;
+let ready;
 
-let generateSpaceDebris = false, generateSmallAsteroids = false, gameOver = false;
+let generateSpaceDebris = false, generateSmallAsteroids = false, gameOver = false, enabledLasers = false;
 
 // SYSTEM
 
@@ -34,6 +35,7 @@ const setup = () => {
 	setupThreeJS();
 	Promise.all([setupScenery(), load3DModels(), setupAudio()]).then(() => {
 		renderer.render(scene, robot.camera);
+
 
     // ARDUINO REPLACEMENT
 
@@ -61,37 +63,38 @@ const setup = () => {
 
     });
 
+    ready = true;
 		hideDiv('.start-div');
-		handleStartButton();
+		// handleStartButton();
 	});
 
 };
 
-const handleStartButton = () => {
-	let button = document.querySelector('.start');
-	let buttonDiv = document.querySelector('.start-div');
+const startStory = () => {
 
-  button.classList.remove('hide');
-	button.addEventListener('click', (e) => {
-		e.preventDefault();
-		buttonDiv.parentNode.removeChild(buttonDiv);
-		soundtrack.play();
-    ipc.send('toggle-12v-fan');
-    potCenter = robot.raw;
-    console.log('potCenter', robot.raw);
-    console.log('potMin', robot.raw-225);
-    console.log('potMax', robot.raw+225);
+  soundtrack.play();
+  ipc.send('toggle-12v-fan');
+  potCenter = robot.raw;
+  draw();
+  // document.querySelector('.hud-div').classList.add('shake-constant');
 
-
-    // debug mute
-		// soundtrack.muted = true;
-
-		draw();
-	});
-
-  button.click();
 
 };
+
+// const handleStartButton = () => {
+// 	let button = document.querySelector('.start');
+// 	let buttonDiv = document.querySelector('.start-div');
+
+//   button.classList.remove('hide');
+// 	button.addEventListener('click', (e) => {
+// 		e.preventDefault();
+// 		buttonDiv.parentNode.removeChild(buttonDiv);
+
+// 	});
+
+//   button.click();
+
+// };
 
 const setupThreeJS = () => {
 
@@ -168,15 +171,18 @@ const addTimelineListeners = () => {
         break;
 
       case 'alarm_asteroid':
-        // showDiv('.alarm-div');
+        showDiv('.alarm-div');
+        generateSpaceDebris = false;
         break;
 
       case 'speed_up':
-        // hideDiv('.alarm-div');
-        generateSpaceDebris = false;
+        hideDiv('.alarm-div');
+        // generateSpaceDebris = false;
         earth.moveTo(0, -250, 360);
-        ipc.send('flash-both-lights');
         ipc.send('toggle-12v-fan');
+        ipc.send('laserControl', true);
+        showDiv('.hud-div');
+        // document.querySelector('.hud-div').classList.remove('shake-constant');
         break;
 
       case 'start_comets':
@@ -187,15 +193,27 @@ const addTimelineListeners = () => {
 
       case 'big_comet':
         createBigAsteroid();
+        generateSmallAsteroids = false;
         break;
 
       case 'big_comet_explosion':
         explodeObject(bigAsteroid.el);
+        ipc.send('flash-both-lights');
         bigAsteroid = null;
         break;
 
       case 'back_to_earth':
         earth.moveTo(0, -220, 300);
+        hideDiv('.hud-div');
+        ipc.send('laserControl', false);
+        break;
+
+      case 'the_end':
+        hideDiv('body');
+        break;
+
+      case 'reset':
+        location.reload();
         break;
 
     }
@@ -258,7 +276,7 @@ const createSmallAsteroids = () => {
     });
 
     if(generateSmallAsteroids) {
-      setTimeout(loop, Math.random() * 1000 + 500);
+      setTimeout(loop, Math.random() * 1000 + 1000);
     }
   }
 
@@ -270,7 +288,7 @@ const createSpaceDebris = () => {
 
   function loop() {
 
-    let deg = robot.deg + Math.random() * 8 - 4;
+    let deg = robot.deg + Math.random() * 20 - 10;
     let rad = helpers.toRadians(deg);
 
     let x = 250 * Math.cos(rad);
@@ -421,20 +439,24 @@ const shootLaser = (cannon) => {
 
 /* ARDUINO */
 
-ipc.on('move', function(val) {
+ipc.on('move', val => {
   if(!isNaN(val)) {
     robot.raw = val;
     robot.speed = helpers.mapRange(val, potCenter-225, potCenter+225, 0.7, -0.7);
   }
 });
 
-ipc.on('shootLeftLaser', function() {
+ipc.on('shootLeftLaser', () => {
   shootLaser('left');
 });
 
-ipc.on('shootRightLaser', function() {
+ipc.on('shootRightLaser', () => {
   shootLaser('right');
-})
+});
+
+ipc.on('startStory', () => {
+  if(ready) startStory();
+});
 
 setup();
 

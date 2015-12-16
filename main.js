@@ -14,7 +14,8 @@ let strip = null;
 let stripReady = false;
 let relayFan5v, relayFan12v, relayLeftLight, relayRightLight;
 let fps = 10;
-var flashSide = 'none', leftLedsTimer, rightLedsTimer;
+let flashSide = 'none', leftLedsTimer, rightLedsTimer;
+let lasersEnabled = false;
 
 let mainWindow = null;
 
@@ -28,9 +29,8 @@ app.on('window-all-closed', function(){
 app.on('ready', function(){
 
   mainWindow = new BrowserWindow({width: 1440, height: 900});
-  mainWindow.openDevTools();
   mainWindow.loadUrl('file://' + __dirname + '/index.html');
-
+  mainWindow.setFullScreen(true);
   mainWindow.on('closed', function(){
     mainWindow = null;
   });
@@ -62,7 +62,7 @@ const initBoard = () => {
     stripReady = true;
     strip.color('#000');
     strip.show();
-    neopixels_prepare_lasers();
+
   });
 
   /* RELAY Config */
@@ -73,16 +73,18 @@ const initBoard = () => {
   relayRightLight = new five.Relay(4);
 
   ipc.on('toggle-12v-fan', function(event, arg) {
+    console.log('toggle 12v fan');
     if(!relayFan5v.isOn) relayFan5v.close();
     setTimeout(function (){
-      if(relayFan5v.isOn) relayFan12v.toggle();
+      console.log('toggle fan');
+      if(relayFan5v.isOn) relayFan12v.open();
     }, 500);
   });
 
   ipc.on('toggle-5v-fan', function(event, arg) {
     if(!relayFan12v.isOn) relayFan12v.close();
     setTimeout(function (){
-      if(relayFan12v.isOn) relayFan5v.toggle();
+      if(relayFan12v.isOn) relayFan5v.open();
     }, 500);
   });
 
@@ -107,6 +109,45 @@ const initBoard = () => {
       relayLeftLight.close();
       relayRightLight.close();
     }, 500);
+  });
+
+  ipc.on('alarm', (event, arg) => {
+    neopixels_strobe(10000, 'red', 500);
+  });
+
+  ipc.on('laserControl', (event, laserStatus) => {
+    if(laserStatus) neopixels_prepare_lasers();
+    lasersEnabled = laserStatus;
+  });
+
+  ipc.on('strobe', (event, type) => {
+
+    switch (type) {
+      case 'launch':
+        neopixels_strobe(8500, 'white', 50);
+      break;
+
+      case 'alarm':
+        neopixels_strobe(10000, 'red', 500);
+        break;
+
+      case 'double':
+        neopixels_strobe(400, 'white', 130);
+        break;
+
+      case 'short':
+        neopixels_strobe(400, 'white', 50);
+        break;
+
+      case 'red':
+        neopixels_strobe(5000, 'red', 50);
+        break;
+    }
+
+  });
+
+  ipc.on('roll', (event, duration) => {
+    neopixels_roll(duration);
   });
 
   /* SENSOR Config */
@@ -138,41 +179,46 @@ const initBoard = () => {
 
   potentiometer.on("data", function(){
     let value = this.raw;
-    console.log(this.raw);
     mainWindow.webContents.send('move', value);
   });
 
   rightLaserButton.on("down", function(){
-    mainWindow.webContents.send('shootRightLaser');
-    flashSide = 'right';
-    clearTimeout(rightLedsTimer);
-    rightLedsTimer = setTimeout(() => {
-      flashSide = 'none';
+    if(lasersEnabled) {
+      mainWindow.webContents.send('shootRightLaser');
+      flashSide = 'right';
       clearTimeout(rightLedsTimer);
-    }, 200);
+      rightLedsTimer = setTimeout(() => {
+        flashSide = 'none';
+        clearTimeout(rightLedsTimer);
+      }, 200);
+    }
   });
 
   leftLaserButton.on("down", function(){
-    mainWindow.webContents.send('shootLeftLaser');
-    flashSide = 'left';
-    clearTimeout(leftLedsTimer)
-    leftLedsTimer = setTimeout(() => {
-      flashSide = 'none';
-      clearTimeout(leftLedsTimer);
-    }, 200);
+    if(lasersEnabled) {
+      mainWindow.webContents.send('shootLeftLaser');
+      flashSide = 'left';
+      clearTimeout(leftLedsTimer)
+      leftLedsTimer = setTimeout(() => {
+        flashSide = 'none';
+        clearTimeout(leftLedsTimer);
+      }, 200);
+    }
   });
+
+  startButton.on('down', () => mainWindow.webContents.send('startStory'));
 };
 
-const neopixels_roll = (strip, time) => {
+const neopixels_roll = time => {
 
   if (stripReady) {
 
     let count = 1;
     let animation = setInterval(() => {
 
-      strip.color('#000000');
+      strip.color('#000');
       for (let i=count; i<strip.stripLength(); i+=3) {
-        strip.pixel(i).color('#ffffff');
+        strip.pixel(i).color('orange');
       }
 
       strip.show();
@@ -275,8 +321,6 @@ const neopixels_prepare_lasers = () => {
     } else {
       blankLeds();
     }
-
-
 
   }, 1000/fps);
 

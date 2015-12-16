@@ -27,7 +27,7 @@ function SpaceDebris(x, y, z, model) {
 
 SpaceDebris.prototype.update = function() {
 
-    this.el.position.z += 5;
+    this.el.position.z += 4;
     this.el.rotation.x += 0.001;
     this.el.rotation.y += 0.005;
 

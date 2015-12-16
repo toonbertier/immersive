@@ -13,7 +13,7 @@ function Asteroid(kind) {
 }
 
 Asteroid.prototype.randomPointAroundCurrentDeg = function(currentDeg) {
-  let deg = currentDeg + Math.random() * 5 - 2.5;
+  let deg = currentDeg + Math.random() * 20 - 10;
   let rad = helpers.toRadians(deg);
 
   this.x = 250 * Math.cos(rad);
@@ -62,7 +62,7 @@ Asteroid.prototype.update = function() {
 
     case "small":
 
-      this.el.position.z += 6;
+      this.el.position.z += 4;
       this.el.rotation.x += 0.01;
       this.el.rotation.y += 0.005;
       if(this.el.material.opacity < 1) this.el.material.opacity += 0.1;
