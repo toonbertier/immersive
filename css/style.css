@@ -65,6 +65,10 @@ body {
   animation: fadeInOnLoad 3s;
 }
 
+.hudOut {
+  animation: hudOut 3s;
+}
+
 @keyframes fadeInOnLoad {
   from {
     opacity:0;
@@ -73,6 +77,17 @@ body {
   to {
     opacity:1;
     top: 0px;
+  }
+}
+
+@keyframes hudOut {
+  from {
+    opacity:1;
+    top: 0px;
+  }
+  to {
+    opacity:0;
+    top: -600px;
   }
 }
 

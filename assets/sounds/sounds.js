@@ -3,7 +3,7 @@
 module.exports = [
 	{
 	  name: 'whoosh',
-	  file: './assets/sounds/whoosh.wav'
+	  file: './assets/sounds/whoosh3.wav'
 	},
 	{
 	  name: 'long_whoosh',
@@ -12,6 +12,14 @@ module.exports = [
   {
     name: 'space_cannon',
     file: './assets/sounds/space_cannon.wav'
+  },
+  {
+    name: 'smallexplosion',
+    file: './assets/sounds/smallexplosion.wav'
+  },
+  {
+    name: 'bigexplosion',
+    file: './assets/sounds/bigexplosion.wav'
   },
   // {
   //   name: 'cannon_reload',

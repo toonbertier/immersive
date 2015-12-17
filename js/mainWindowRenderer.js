@@ -199,14 +199,17 @@ const addTimelineListeners = () => {
         break;
 
       case 'big_comet_explosion':
-        explodeObject(bigAsteroid.el, 180);
+        explodeObject(bigAsteroid.el, 400);
         ipc.send('flash-both-lights');
         bigAsteroid = null;
         break;
 
       case 'back_to_earth':
         earth.moveTo(0, -220, 300);
-        hideDiv('.hud-div');
+        document.querySelector('.hud-div').classList.add('hudOut');
+        setTimeout(() => {
+          hideDiv('.hud-div');
+        }, 3000);
         ipc.send('laserControl', false);
         break;
 
@@ -269,7 +272,7 @@ const createSmallAsteroids = () => {
 
     let asteroid = new Asteroid("small");
     window.bean.on(asteroid, 'passing', () => {
-      player.play(soundFX[1], player.calculatePanning(asteroid.el.position.x, robot.camera.position.x))
+      player.play(soundFX[0], player.calculatePanning(asteroid.el.position.x, robot.camera.position.x))
     });
 
     asteroid.renderSmall(robot.deg).then(_asteroid => {
@@ -301,6 +304,10 @@ const createSpaceDebris = () => {
     debris.id = soundtrack.currentTime;
     spaceDebris.push(debris);
     scene.add(debris.el);
+
+    window.bean.on(debris, 'passing', () => {
+      player.play(soundFX[1], player.calculatePanning(debris.el.position.x, robot.camera.position.x))
+    });
 
     if(generateSpaceDebris) {
       setTimeout(loop, Math.random() * 4000 + 2000);
@@ -344,15 +351,24 @@ const handleScenery = () => {
 
   if(explosions.length > 0) {
     explosions.forEach((e, index) => {
+
       if(e.handleScale()) {
         e.updateSphere();
+        if(e.size == 'small') {
+          e.updateParticles();
+        }
       } else {
         scene.remove(e.el);
-        scene.remove(e.particles);
+        if(e.size == 'small') {
+          scene.remove(e.particles);
+        }
         helpers.removeFromArray(explosions, index);
       }
 
-      e.updateParticles();
+      if(e.size == 'big') {
+        e.updateParticles();
+      }
+
     });
   }
 };
@@ -384,15 +400,6 @@ const handleCollisions = () => {
     }
   }
 
-  if(spaceDebris.length > 0) {
-    spaceDebris.forEach((s, index) => {
-      if(s.detectCollision(robot.camera)) {
-        // gameOver = true;
-        console.log('GAME OVER');
-      }
-    });
-  }
-
 };
 
 const handleStars = () => {
@@ -412,12 +419,25 @@ const handleStars = () => {
 
 const explodeObject = (obj, radius) => {
 
-  let expl = new Explosion();
-  explosions.push(expl);
+  ipc.send('flash-both-lights');
+  let expl = false;
+
+  switch(radius) {
+    case 20:
+    player.play(soundFX[3], player.calculatePanning(obj.position.x, robot.camera.position.x));
+    expl = new Explosion('small');
+    break;
+
+    case 400:
+    player.play(soundFX[4], player.calculatePanning(obj.position.x, robot.camera.position.x));
+    expl = new Explosion('big');
+    break;
+  }
+
   scene.add(expl.renderSphere(obj.position.x, obj.position.y, obj.position.z, radius));
   scene.add(expl.renderParticles(obj.position.x, obj.position.y, obj.position.z));
 
-  ipc.send('flash-both-lights');
+  explosions.push(expl);
 
   scene.remove(obj);
 

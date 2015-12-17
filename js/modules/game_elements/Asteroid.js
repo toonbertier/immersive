@@ -102,7 +102,7 @@ Asteroid.prototype.checkOutOfBounds = function() {
 };
 
 Asteroid.prototype.checkPassing = function() {
-  if(this.el.position.z >= 130 && this.el.position.z <= 133) {
+  if(this.el.position.z >= 340 && this.el.position.z <= 343) {
     window.bean.fire(this, 'passing');
   }
 };

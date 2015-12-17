@@ -2,12 +2,18 @@
 
 let helpers = require('../helpers/helpers');
 
-function Explosion() {
+function Explosion(size) {
   this.growing = true;
   this.scale = 0.1;
+  this.size = size
 
-  this.parMovementSpeed = 30;
-  this.parTotalObjects = 1000;
+  if(size == 'small') {
+    this.parMovementSpeed = 30;
+    this.parTotalObjects = 1000;
+  } else {
+    this.parMovementSpeed = 60;
+    this.parTotalObjects = 2000;
+  }
   this.parObjectSize = 2;
   this.parSizeRandomness = 1000;
 
