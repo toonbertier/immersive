@@ -62,5 +62,17 @@ body {
   z-index: 98;
   background: url('../assets/images/hud.png') center center no-repeat;
   background-size: cover;
+  animation: fadeInOnLoad 3s;
+}
+
+@keyframes fadeInOnLoad {
+  from {
+    opacity:0;
+    top: -600px;
+  }
+  to {
+    opacity:1;
+    top: 0px;
+  }
 }
 

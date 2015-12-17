@@ -66,6 +66,9 @@ const setup = () => {
     ready = true;
 		hideDiv('.start-div');
 		// handleStartButton();
+
+    // DEBUG
+    startStory();
 	});
 
 };
@@ -182,7 +185,6 @@ const addTimelineListeners = () => {
         ipc.send('toggle-12v-fan');
         ipc.send('laserControl', true);
         showDiv('.hud-div');
-        // document.querySelector('.hud-div').classList.remove('shake-constant');
         break;
 
       case 'start_comets':
@@ -197,7 +199,7 @@ const addTimelineListeners = () => {
         break;
 
       case 'big_comet_explosion':
-        explodeObject(bigAsteroid.el);
+        explodeObject(bigAsteroid.el, 180);
         ipc.send('flash-both-lights');
         bigAsteroid = null;
         break;
@@ -375,7 +377,7 @@ const handleCollisions = () => {
       asteroids.forEach((a, index) => {
         if(robot.detectLaserColliction(a.el)) {
           helpers.removeFromArray(asteroids, index);
-          explodeObject(a.el);
+          explodeObject(a.el, 20);
           a = null;
         }
       });
@@ -408,11 +410,11 @@ const handleStars = () => {
 
 };
 
-const explodeObject = (obj) => {
+const explodeObject = (obj, radius) => {
 
   let expl = new Explosion();
   explosions.push(expl);
-  scene.add(expl.renderSphere(obj.position.x, obj.position.y, obj.position.z));
+  scene.add(expl.renderSphere(obj.position.x, obj.position.y, obj.position.z, radius));
   scene.add(expl.renderParticles(obj.position.x, obj.position.y, obj.position.z));
 
   ipc.send('flash-both-lights');

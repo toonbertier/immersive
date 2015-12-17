@@ -14,9 +14,9 @@ function Explosion() {
   this.parDirections = [];
 }
 
-Explosion.prototype.renderSphere = function(x, y, z) {
+Explosion.prototype.renderSphere = function(x, y, z, radius) {
 
-  let geometry = new THREE.SphereGeometry(20, 32, 16 );
+  let geometry = new THREE.SphereGeometry(radius, 32, 16 );
   let material = new THREE.MeshLambertMaterial( { color: 0xffffff, emissive: 0xeeeeee } );
   this.el = new THREE.Mesh( geometry, material );
   this.el.position.set(x, y, z);
@@ -28,7 +28,7 @@ Explosion.prototype.renderSphere = function(x, y, z) {
     blending: THREE.AdditiveBlending
   });
   this.sprite = new THREE.Sprite( spriteMaterial );
-  this.sprite.scale.set(100, 100, 1.0);
+  this.sprite.scale.set(5 * radius, 5 * radius, 1.0);
   this.el.add(this.sprite);
 
   return this.el;

@@ -36,18 +36,18 @@ app.on('ready', function(){
     mainWindow = null;
   });
 
-  boards = new five.Boards([
-    {
-      id: 'main',
-      port: '/dev/cu.usbmodem1411'
-    },
-    {
-      id: 'leds',
-      port: '/dev/cu.usbmodem1421'
-    }
-  ]);
+  // boards = new five.Boards([
+  //   {
+  //     id: 'main',
+  //     port: '/dev/cu.usbmodem1411'
+  //   },
+  //   {
+  //     id: 'leds',
+  //     port: '/dev/cu.usbmodem1421'
+  //   }
+  // ]);
 
-  boards.on("ready", initBoards);
+  // boards.on("ready", initBoards);
 
   // board.on('ready', initBoard);
 
