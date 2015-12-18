@@ -49,8 +49,6 @@ app.on('ready', function(){
 
   boards.on("ready", initBoards);
 
-  board.on('ready', initBoard);
-
 });
 
 app.on('quit', function() {
@@ -333,7 +331,7 @@ const neopixels_prepare_lasers = () => {
         strip.show();
       }
     } else if(flashSide === 'left') {
-      for(let i = 119; i > 60; i-=1) {
+      for(let i = 119; i > 59; i-=1) {
         strip.pixel(i).color('green');
         strip.show();
       }

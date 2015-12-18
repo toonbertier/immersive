@@ -1,6 +1,6 @@
 0 info it worked if it ends with ok
-1 verbose cli [ '/Users/toonbertier/.nvm/versions/node/v4.1.1/bin/node',
-1 verbose cli   '/Users/toonbertier/.nvm/versions/node/v4.1.1/bin/npm',
+1 verbose cli [ '/Users/Gilles/.nvm/versions/node/v4.1.1/bin/node',
+1 verbose cli   '/Users/Gilles/.nvm/versions/node/v4.1.1/bin/npm',
 1 verbose cli   'start' ]
 2 info using npm@3.3.4
 3 info using node@v4.1.1
@@ -9,25 +9,25 @@
 6 silly lifecycle immersive@1.0.0~prestart: no script for prestart, continuing
 7 info lifecycle immersive@1.0.0~start: immersive@1.0.0
 8 verbose lifecycle immersive@1.0.0~start: unsafe-perm in lifecycle true
-9 verbose lifecycle immersive@1.0.0~start: PATH: /Users/toonbertier/.nvm/versions/node/v4.1.1/lib/node_modules/npm/bin/node-gyp-bin:/Users/toonbertier/Google Drive/Devine/EXD/opdracht/immersive/node_modules/.bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Users/toonbertier/.nvm/versions/node/v4.1.1/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/toonbertier/.rvm/bin
-10 verbose lifecycle immersive@1.0.0~start: CWD: /Users/toonbertier/Google Drive/Devine/EXD/opdracht/immersive
+9 verbose lifecycle immersive@1.0.0~start: PATH: /Users/Gilles/.nvm/versions/node/v4.1.1/lib/node_modules/npm/bin/node-gyp-bin:/Users/Gilles/Dropbox/EXD-Ride/code/immersive/node_modules/.bin:/Users/Gilles/.nvm/versions/node/v4.1.1/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+10 verbose lifecycle immersive@1.0.0~start: CWD: /Users/Gilles/Dropbox/EXD-Ride/code/immersive
 11 silly lifecycle immersive@1.0.0~start: Args: [ '-c', 'electron main.js' ]
 12 silly lifecycle immersive@1.0.0~start: Returned: code: 7  signal: null
 13 info lifecycle immersive@1.0.0~start: Failed to exec start script
 14 verbose stack Error: immersive@1.0.0 start: `electron main.js`
 14 verbose stack Exit status 7
-14 verbose stack     at EventEmitter.<anonymous> (/Users/toonbertier/.nvm/versions/node/v4.1.1/lib/node_modules/npm/lib/utils/lifecycle.js:233:16)
+14 verbose stack     at EventEmitter.<anonymous> (/Users/Gilles/.nvm/versions/node/v4.1.1/lib/node_modules/npm/lib/utils/lifecycle.js:233:16)
 14 verbose stack     at emitTwo (events.js:87:13)
 14 verbose stack     at EventEmitter.emit (events.js:172:7)
-14 verbose stack     at ChildProcess.<anonymous> (/Users/toonbertier/.nvm/versions/node/v4.1.1/lib/node_modules/npm/lib/utils/spawn.js:24:14)
+14 verbose stack     at ChildProcess.<anonymous> (/Users/Gilles/.nvm/versions/node/v4.1.1/lib/node_modules/npm/lib/utils/spawn.js:24:14)
 14 verbose stack     at emitTwo (events.js:87:13)
 14 verbose stack     at ChildProcess.emit (events.js:172:7)
 14 verbose stack     at maybeClose (internal/child_process.js:817:16)
 14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5)
 15 verbose pkgid immersive@1.0.0
-16 verbose cwd /Users/toonbertier/Google Drive/Devine/EXD/opdracht/immersive
+16 verbose cwd /Users/Gilles/Dropbox/EXD-Ride/code/immersive
 17 error Darwin 14.5.0
-18 error argv "/Users/toonbertier/.nvm/versions/node/v4.1.1/bin/node" "/Users/toonbertier/.nvm/versions/node/v4.1.1/bin/npm" "start"
+18 error argv "/Users/Gilles/.nvm/versions/node/v4.1.1/bin/node" "/Users/Gilles/.nvm/versions/node/v4.1.1/bin/npm" "start"
 19 error node v4.1.1
 20 error npm  v3.3.4
 21 error code ELIFECYCLE
